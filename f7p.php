@@ -316,24 +316,27 @@ $buff .= "<tr class=\"parent-row\" style=\"cursor:pointer;\" onclick=\"window.lo
 
 	foreach($dname as $folder){
     $full_folder = $pwd.$folder;
-    $buff .= "<tr style=\"cursor:pointer;\" onclick=\"window.location.href='?y=".$pwd.$folder.DIRECTORY_SEPARATOR."'\">
+    $safe_id = 'd_' . md5($folder);
+    
+    $buff .= "<tr style=\"cursor:pointer;\" onclick=\"window.location.href='?y=".urlencode($pwd.$folder.DIRECTORY_SEPARATOR)."'\">
         <td class=\"file-name\">
             <span class=\"folder-icon\">
                 <img width=20px src=img/dir.png>
             </span> 
-            <span>".htmlspecialchars($folder)."</span>
-            <form action=\"?y=".$pwd."\" method=\"post\" id=\"".clearspace($folder)."_form\" class=\"rename-form\" style=\"display:none;margin:0;padding:0;\">
+            <span class=\"file-name-text\" id=\"{$safe_id}_link\">".htmlspecialchars($folder)."</span>  <!-- ← Tambahkan class -->
+            <form action=\"?y=".urlencode($pwd)."\" method=\"post\" id=\"{$safe_id}_form\" class=\"rename-form\" style=\"display:none;\">
                 <input type=\"hidden\" name=\"oldname\" value=\"".htmlspecialchars($folder)."\" />
                 <input type=\"hidden\" name=\"current_dir\" value=\"".htmlspecialchars($pwd)."\" />
-                <input class=\"inputz rename-input\" style=\"width:120px;\" type=\"text\" name=\"newname\" value=\"".htmlspecialchars($folder)."\" />
-                <input class=\"inputzbut\" type=\"submit\" name=\"rename\" value=\"Rename\" onclick=\"event.stopPropagation();\" />
-                <input class=\"inputzbut\" type=\"button\" value=\"✕\" onclick=\"event.stopPropagation();toggleRename('".clearspace($folder)."');\" />
+                <input type=\"hidden\" name=\"rename\" value=\"1\" />
+                <input class=\"inputz rename-input\" type=\"text\" name=\"newname\" value=\"".htmlspecialchars($folder)."\" />
+                <input class=\"inputzbut\" type=\"submit\" value=\"Rename\" onclick=\"event.stopPropagation();\" />
+                <input class=\"inputzbut\" type=\"button\" value=\"✕\" onclick=\"event.stopPropagation();toggleRename('{$safe_id}');\" />
             </form>
         </td>
         <td></td>
         <td style=\"white-space:nowrap;text-align:right;\">
             <a href=\"javascript:void(0);\" onclick=\"event.stopPropagation();showRenameAlert('".addslashes($folder)."', '".addslashes($full_folder)."', '".addslashes($pwd)."', 'folder');\" title=\"Rename\"><img width=20px src=img/rename.png></a>
-            <a href=\"?y=$pwd&amp;fdelete=".$pwd.$folder."\" onclick=\"event.stopPropagation();return confirmDelete('".addslashes($folder)."', 'folder');\" data-no-ajax=\"true\" title=\"Delete\"><img width=20px src=img/rcb.png></a>
+            <a href=\"?y=".urlencode($pwd)."&amp;fdelete=".urlencode($pwd.$folder)."\" onclick=\"event.stopPropagation();return confirmDelete('".addslashes($folder)."', 'folder');\" data-no-ajax=\"true\" title=\"Delete\"><img width=20px src=img/rcb.png></a>
         </td>
     </tr>";
 }
