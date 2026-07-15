@@ -114,6 +114,22 @@ define('ADMIN_PASS_HASH', '$2a$09$lF0dTQmb5Dhh2BG5DAS6NuzJ8/rOT9el9Nui2vZAZmWkkK
 </Files>
 ```
 
+## 🎭 Screenshots
+**File list**
+![](https://res.cloudinary.com/dry7cujup/image/upload/v1784072294/1-file-list_uwg4w5.jpg)
+
+**Editing**
+![](https://res.cloudinary.com/dry7cujup/image/upload/v1784072389/2-editing_z5elyw.jpg)
+
+**Deleting**
+![](https://res.cloudinary.com/dry7cujup/image/upload/v1784072451/3-move-to-trash_gynibu.jpg)
+
+**GitHub set**: Use **Classic token**, check **REPO** only
+![](https://res.cloudinary.com/dry7cujup/image/upload/v1784072504/4-githubset_h2wtxl.jpg)
+
+**PHP Info**
+![](https://res.cloudinary.com/dry7cujup/image/upload/v1784072588/5-phpinfo_kdgx5j.jpg)
+
 ## ⚠️ Disclaimer
 
 **F7P is a powerful administrative tool that should only be used on servers you own or have explicit permission to access. Unauthorized use may violate laws and terms of service. The developers assume no responsibility for misuse or damage caused by this tool.**
