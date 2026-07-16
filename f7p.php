@@ -23,7 +23,7 @@ if(isset($_POST['content_encoded']) && !empty($_POST['content_encoded'])) {
 // User: admin | Pass: password123
 // Use Bcrypt or https://lain.lain.ch/password-hash/
 define('ADMIN_USER', 'admin');
-define('ADMIN_PASS_HASH', '$2a$09$4CkdiJrXanwhimOhATORCOrIE0rxTr8hk5xupxfJ2hP6p1qJQILLS');
+define('ADMIN_PASS_HASH', '$2a$09$lF0dTQmb5Dhh2BG5DAS6NuzJ8/rOT9el9Nui2vZAZmWkkKKf4idCu');
 
 $is_logged_in = false;
 if (isset($_SESSION['f7p_logged_in']) && $_SESSION['f7p_logged_in'] === true) {
