@@ -697,7 +697,7 @@ jwcYguIAe2GMNijZ9jL4GYqTSB9AvEmHGjk/m19h1CGvPoHIY5A1Oh2tE3XIe1bxKw77YTyt6T2F
             return confirm('Move to the hell?\n\n' + name);
         }
 function createNewFolder(currentDir) {
-    var folderName = prompt('Enter new folder name:', 'new_folder');
+    var folderName = prompt('Enter new folder name:', '');
     if (folderName !== null && folderName.trim() !== '') {
         window.location.href = '?y=' + encodeURIComponent(currentDir) + '&mkdir=' + encodeURIComponent(folderName.trim());
     } else if (folderName === '') {
@@ -706,7 +706,7 @@ function createNewFolder(currentDir) {
 }
 
 function createNewFile(currentDir) {
-    var fileName = prompt('Enter new file name:', 'newfile.php');
+    var fileName = prompt('Enter new file name:', '');
     if (fileName !== null && fileName.trim() !== '') {
         window.location.href = '?y=' + encodeURIComponent(currentDir) + '&edit=' + encodeURIComponent(currentDir + fileName.trim());
     } else if (fileName === '') {
