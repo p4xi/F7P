@@ -775,75 +775,6 @@ function createNewFile(currentDir) {
             });
         });
 
-        function loadContent(url) {
-            var content = document.getElementById('content');
-            if (!content) return;
-
-            content.innerHTML = '<div style="text-align:center;padding:40px;color:#999;font-size:16px;">⏳ Loading...</div>';
-
-            fetch(url)
-                .then(function(response) {
-                    return response.text();
-                })
-                .then(function(html) {
-                    var parser = new DOMParser();
-                    var doc = parser.parseFromString(html, 'text/html');
-
-                    var newContent = doc.getElementById('content');
-                    if (newContent) {
-                        content.innerHTML = newContent.innerHTML;
-                    } else {
-                        content.innerHTML = '<div style="text-align:center;padding:40px;color:#cc3333;font-size:16px;">Failed to load content</div>';
-                    }
-
-                    var newBreadcrumb = doc.querySelector('#header .breadcrumb');
-                    if (newBreadcrumb) {
-                        var oldBreadcrumb = document.querySelector('#header .breadcrumb');
-                        if (oldBreadcrumb) {
-                            oldBreadcrumb.innerHTML = newBreadcrumb.innerHTML;
-                            setTimeout(function() {
-                                oldBreadcrumb.scrollLeft = oldBreadcrumb.scrollWidth;
-                            }, 50);
-                        }
-                    }
-
-                    var newFooter = doc.querySelector('#footer');
-                    if (newFooter) {
-                        var oldFooter = document.querySelector('#footer');
-                        if (oldFooter) {
-                            oldFooter.innerHTML = newFooter.innerHTML;
-                        }
-                    }
-
-                    var scripts = content.querySelectorAll('script');
-                    scripts.forEach(function(script) {
-                        var newScript = document.createElement('script');
-                        if (script.src) {
-                            newScript.src = script.src;
-                        } else {
-                            newScript.textContent = script.textContent;
-                        }
-                        document.body.appendChild(newScript);
-                    });
-                })
-                .catch(function(err) {
-                    content.innerHTML = '<div style="text-align:center;padding:40px;color:#cc3333;font-size:16px;">Error: ' + err.message + '</div>';
-                });
-        }
-
-        var contentEl = document.getElementById('content');
-if (contentEl) {
-    contentEl.addEventListener('touchstart', function(e) {
-        var el = this;
-        var scrollTop = el.scrollTop;
-        var scrollHeight = el.scrollHeight;
-        var clientHeight = el.clientHeight;
-        
-        if (scrollTop === 0 || scrollTop + clientHeight >= scrollHeight) {
-        }
-    }, { passive: true });
-}
-
 
 function saveScrollPosition(url) {
     var content = document.getElementById('content');
@@ -868,29 +799,15 @@ function limitScrollData() {
         
         keys.forEach(function(key) {
             if (key.startsWith('f7p_scroll_')) {
-                var data = localStorage.getItem(key);
-                if (data) {
-                    try {
-                        var parsed = JSON.parse(data);
-                        scrollKeys.push({
-                            key: key,
-                            time: parsed.timestamp || 0
-                        });
-                    } catch(e) {
-                        scrollKeys.push({ key: key, time: 0 });
-                    }
-                }
+                scrollKeys.push(key);
             }
         });
         
-        if (scrollKeys.length >2) {
-            scrollKeys.sort(function(a, b) {
-                return a.time - b.time;
-            });
-            
+        if (scrollKeys.length > 2) {
+            scrollKeys.sort();
             var toDelete = scrollKeys.slice(0, scrollKeys.length - 2);
             toDelete.forEach(function(item) {
-                localStorage.removeItem(item.key);
+                localStorage.removeItem(item);
             });
         }
     } catch(e) {}
