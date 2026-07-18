@@ -844,6 +844,181 @@ if (contentEl) {
     }, { passive: true });
 }
 
+
+function saveScrollPosition(url) {
+    var content = document.getElementById('content');
+    if (!content) return;
+    
+    var scrollData = {
+        top: content.scrollTop,
+        url: url || window.location.href
+    };
+    
+    try {
+        var key = 'f7p_scroll_' + encodeURIComponent(url || window.location.href);
+        localStorage.setItem(key, JSON.stringify(scrollData));
+        limitScrollData();
+    } catch(e) {}
+}
+
+function limitScrollData() {
+    try {
+        var keys = Object.keys(localStorage);
+        var scrollKeys = [];
+        
+        keys.forEach(function(key) {
+            if (key.startsWith('f7p_scroll_')) {
+                var data = localStorage.getItem(key);
+                if (data) {
+                    try {
+                        var parsed = JSON.parse(data);
+                        scrollKeys.push({
+                            key: key,
+                            time: parsed.timestamp || 0
+                        });
+                    } catch(e) {
+                        scrollKeys.push({ key: key, time: 0 });
+                    }
+                }
+            }
+        });
+        
+        if (scrollKeys.length >2) {
+            scrollKeys.sort(function(a, b) {
+                return a.time - b.time;
+            });
+            
+            var toDelete = scrollKeys.slice(0, scrollKeys.length - 2);
+            toDelete.forEach(function(item) {
+                localStorage.removeItem(item.key);
+            });
+        }
+    } catch(e) {}
+}
+
+function getScrollPosition(url) {
+    try {
+        var key = 'f7p_scroll_' + encodeURIComponent(url);
+        var data = localStorage.getItem(key);
+        if (data) {
+            return JSON.parse(data);
+        }
+    } catch(e) {}
+    return null;
+}
+
+var originalLoadContent = window.loadContent;
+
+window.loadContent = function(url) {
+    var content = document.getElementById('content');
+    if (!content) return;
+    
+    var currentUrl = window.location.href;
+    if (currentUrl) {
+        saveScrollPosition(currentUrl);
+    }
+    
+    fetch(url)
+        .then(function(response) {
+            return response.text();
+        })
+        .then(function(html) {
+            var parser = new DOMParser();
+            var doc = parser.parseFromString(html, 'text/html');
+            
+            var newContent = doc.getElementById('content');
+            if (newContent) {
+                content.innerHTML = newContent.innerHTML;
+            }
+            
+            var newBreadcrumb = doc.querySelector('#header .breadcrumb');
+            if (newBreadcrumb) {
+                var oldBreadcrumb = document.querySelector('#header .breadcrumb');
+                if (oldBreadcrumb) {
+                    oldBreadcrumb.innerHTML = newBreadcrumb.innerHTML;
+                    setTimeout(function() {
+                        oldBreadcrumb.scrollLeft = oldBreadcrumb.scrollWidth;
+                    }, 50);
+                }
+            }
+            
+            var newFooter = doc.querySelector('#footer');
+            if (newFooter) {
+                var oldFooter = document.querySelector('#footer');
+                if (oldFooter) {
+                    oldFooter.innerHTML = newFooter.innerHTML;
+                }
+            }
+            
+            var scripts = content.querySelectorAll('script');
+            scripts.forEach(function(script) {
+                var newScript = document.createElement('script');
+                if (script.src) {
+                    newScript.src = script.src;
+                } else {
+                    newScript.textContent = script.textContent;
+                }
+                document.body.appendChild(newScript);
+            });
+            
+            var savedPosition = getScrollPosition(url);
+            if (savedPosition && savedPosition.top > 0) {
+                setTimeout(function() {
+                    content.scrollTop = savedPosition.top;
+                }, 150);
+            }
+        })
+        .catch(function(err) {});
+};
+
+window.addEventListener('popstate', function(e) {
+    var url = window.location.href;
+    var content = document.getElementById('content');
+    if (content) {
+        saveScrollPosition(window.location.href);
+    }
+    setTimeout(function() {
+        var savedPosition = getScrollPosition(url);
+        if (savedPosition && savedPosition.top > 0) {
+            content.scrollTop = savedPosition.top;
+        }
+    }, 200);
+});
+
+window.addEventListener('beforeunload', function() {
+    var content = document.getElementById('content');
+    if (content) {
+        saveScrollPosition(window.location.href);
+    }
+});
+
+document.addEventListener('DOMContentLoaded', function() {
+    setTimeout(function() {
+        var content = document.getElementById('content');
+        if (content) {
+            var saved = getScrollPosition(window.location.href);
+            if (saved && saved.top > 0) {
+                content.scrollTop = saved.top;
+            }
+        }
+    }, 200);
+});
+
+document.addEventListener('click', function(e) {
+    var link = e.target.closest('a[href]');
+    if (!link) return;
+    
+    var href = link.getAttribute('href');
+    if (!href || href === '#' || href.indexOf('javascript:') === 0) return;
+    if (link.hasAttribute('data-no-ajax')) return;
+    if (link.target === '_blank') return;
+    
+    var content = document.getElementById('content');
+    if (content) {
+        saveScrollPosition(window.location.href);
+    }
+});
+
         function pushToGitHub() {
     var githubFullPath = document.getElementById('github_full_path');
     var fileInput = document.querySelector('input[name="saveas"]');
@@ -1931,6 +2106,7 @@ setTimeout(function() {
                 initPushButton();
             }, 300);
         });
+
         </script>
         <?php
     }
@@ -1951,5 +2127,6 @@ setTimeout(function() {
         <span class="footer-item"> <span class="gaya"><?php echo $server_ip; ?></span></span>
         <span class="footer-item"><?php echo $system; ?></span>
     </div>
+<script>
 </body>
 </html>
