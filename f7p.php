@@ -1532,7 +1532,7 @@ setTimeout(function() {
     $msg = "";
     
     if($filez = @fopen($file,"w")){
-        $time = date("h:i:s a d-M-Y", time());
+        $time = date("h:i:s a", time());
         if(@fwrite($filez, $content)) {
             $time = preg_replace('/(\d{2}:\d{2}:\d{2}\s[ap]m)/', '<strong>$1</strong>', $time);
             $msg = "Saved at " . $time;
@@ -1560,7 +1560,11 @@ setTimeout(function() {
         <form action="?y=<?php echo $pwd; ?>&amp;edit=<?php echo urlencode($file); ?>" method="post" id="editForm">
     <input type="hidden" name="saveas" value="<?php echo htmlspecialchars($file, ENT_QUOTES, 'UTF-8'); ?>">
     <textarea class="output" name="content_plain" id="editorContent" style="height:400px;"><?php echo $display_content; ?></textarea>
-    
+   <?php
+        if(isset($msg) && $msg != "") {
+            echo "<div style='text-align:right;font-size:12px;'>{$msg}</div>";
+        }
+        ?> 
     <div class="cmd-row mt-2" style="display:flex;gap:8px;align-items:center;width:100%;flex-wrap:wrap;">
         <a href="?y=<?php echo $pwd; ?>" data-no-ajax="true"><img width=24px src=f7p-assets/previous.png></a>
         <input class="inputz" id="saveas_input" type="text" value="<?php echo htmlspecialchars($file, ENT_QUOTES, 'UTF-8'); ?>" style="flex:2;min-width:120px;" readonly />
@@ -1575,15 +1579,12 @@ setTimeout(function() {
             </div>
             
             <div class="cmd-row mt-2" style="display:flex;gap:8px;flex-wrap:wrap;">
-                <input class="inputzbut" type="button" value="Paste + Save" id="pasteSaveBtn" style="flex:1;background:#1f6feb;" />
-                <input class="inputzbut" type="button" value="Remove Comments" id="removeCommentsBtn" style="flex:1;background:#d29922;" />
-            </div>
+    <input class="inputzbut" type="button" value="Copy" id="copyContentBtn" style="flex:1;background:#006600;" />
+    <input class="inputzbut" type="button" value="Paste + Save" id="pasteSaveBtn" style="flex:1;background:#ff0000;" />
+    <input class="inputzbut" type="button" value="Remove Comments" id="removeCommentsBtn" style="flex:1;background:#d29922;" />
+</div>
         </form>
-        <?php
-        if(isset($msg) && $msg != "") {
-            echo "<div style='text-align:center;margin:10px;font-size:14px;'>{$msg}</div>";
-        }
-        ?>
+        
         <script>
         (function() {
             function scrollInputsToEnd() {
@@ -1741,6 +1742,51 @@ setTimeout(function() {
             
             setTimeout(updatePushButton, 200);
         })();
+
+var copyBtn = document.getElementById('copyContentBtn');
+if (copyBtn && editorContent) {
+    copyBtn.addEventListener('click', function() {
+        var btn = this;
+        var originalText = btn.value;
+        var content = editorContent.value;
+        
+        if (!content || content.trim() === '') {
+            alert('Textarea kosong, tidak ada yang bisa disalin');
+            return;
+        }
+        
+        if (!navigator.clipboard) {
+            var textarea = document.createElement('textarea');
+            textarea.value = content;
+            document.body.appendChild(textarea);
+            textarea.select();
+            try {
+                document.execCommand('copy');
+                btn.value = 'Copied';
+            } catch(err) {
+                alert('Failed to copy: ' + err.message);
+                return;
+            }
+            document.body.removeChild(textarea);
+        } else {
+            navigator.clipboard.writeText(content).then(function() {
+                btn.value = 'Copied';
+            }).catch(function(err) {
+                alert('Failed to copy: ' + err.message);
+                return;
+            });
+        }
+        
+        btn.disabled = true;
+        btn.style.opacity = '0.7';
+        
+        setTimeout(function() {
+            btn.value = originalText;
+            btn.disabled = false;
+            btn.style.opacity = '1';
+        }, 1500);
+    });
+}
         </script>
         <?php
     } 
