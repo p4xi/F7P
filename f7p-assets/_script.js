@@ -1,133 +1,160 @@
 function initPushButton() {
-            setTimeout(function() {
-                updatePaths();
-                var btn = document.getElementById('pushToGitBtn');
-                var input = document.getElementById('github_full_path');
-                if (btn && input) {
-                    if (input.dataset.isValid === 'true' && input.value && input.value !== 'Loading...' && input.value !== '') {
-                        btn.disabled = false;
-                        btn.style.opacity = '1';
-                        btn.style.cursor = 'pointer';
-                        btn.style.background = '#2b3137';
-                    } else {
-                        btn.disabled = true;
-                        btn.style.opacity = '0.5';
-                        btn.style.cursor = 'not-allowed';
-                    }
-                }
-            }, 500);
-        }
-
-        function updatePaths() {
-            var token = localStorage.getItem('f7p_gh_token_9x7k2m');
-            var repo = localStorage.getItem('f7p_gh_repo_9x7k2m');
-            var serverPath = localStorage.getItem('f7p_gh_server_path_9x7k2m');
-            var githubPath = localStorage.getItem('f7p_gh_path_9x7k2m');
-            var fileInput = document.querySelector('input[name="saveas"]');
-            var githubFullPath = document.getElementById('github_full_path');
-            var btn = document.getElementById('pushToGitBtn');
-            
-            if (!githubFullPath) return;
-            
-            var fullPath = '';
-            var isValid = false;
-            
-            if (!token || !repo || !serverPath || !githubPath) {
-                fullPath = '⚠️ Setup GitHub API first (⋮ → GitHub API)';
-                isValid = false;
-            } else if (!fileInput || !fileInput.value) {
-                fullPath = '❌ No file selected';
-                isValid = false;
+    setTimeout(function() {
+        updatePaths();
+        var btn = document.getElementById('pushToGitBtn');
+        var input = document.getElementById('github_full_path');
+        if (btn && input) {
+            if (input.dataset.isValid === 'true' && input.value && input.value !== 'Loading...' && input.value !== '') {
+                btn.disabled = false;
+                btn.style.opacity = '1';
+                btn.style.cursor = 'pointer';
+                btn.style.background = '#2b3137';
             } else {
-                var filePath = fileInput.value;
-                if (filePath.startsWith(serverPath)) {
-                    var relativePath = filePath.substring(serverPath.length);
-                    if (relativePath.startsWith('/') || relativePath.startsWith('\\')) {
-                        relativePath = relativePath.substring(1);
-                    }
-                    var finalPath = githubPath;
-                    if (!finalPath.endsWith('/')) finalPath += '/';
-                    finalPath += relativePath;
-                    fullPath = 'github.com/' + repo + '/' + finalPath;
-                    isValid = true;
-                } else {
-                    fullPath = '🚫 File outside Server Path';
-                    isValid = false;
-                }
-            }
-            
-            githubFullPath.value = fullPath;
-            githubFullPath.style.color = isValid ? '#0066cc' : '#dc3545';
-            githubFullPath.dataset.isValid = isValid ? 'true' : 'false';
-            
-            if (btn) {
-                if (isValid && fullPath && fullPath !== '⚠️ Setup GitHub API first (⋮ → GitHub API)' && fullPath !== '❌ No file selected') {
-                    btn.disabled = false;
-                    btn.style.opacity = '1';
-                    btn.style.cursor = 'pointer';
-                    btn.style.background = '#2b3137';
-                } else {
-                    btn.disabled = true;
-                    btn.style.opacity = '0.5';
-                    btn.style.cursor = 'not-allowed';
-                }
+                btn.disabled = true;
+                btn.style.opacity = '0.5';
+                btn.style.cursor = 'not-allowed';
             }
         }
+    }, 500);
+}
 
-        document.addEventListener('DOMContentLoaded', function() {
-            var saveasInput = document.querySelector('input[name="saveas"]');
-            if (saveasInput) {
-                saveasInput.addEventListener('change', function() {
-                    setTimeout(updatePaths, 100);
-                });
-                saveasInput.addEventListener('input', function() {
-                    setTimeout(updatePaths, 100);
-                });
+function updatePaths() {
+    var token = localStorage.getItem('f7p_gh_token_9x7k2m');
+    var repo = localStorage.getItem('f7p_gh_repo_9x7k2m');
+    var serverPath = localStorage.getItem('f7p_gh_server_path_9x7k2m');
+    var dirMode = localStorage.getItem('f7p_dir_mode_9x7k2m') || 'single';
+    var frontendPath = localStorage.getItem('f7p_frontend_path_9x7k2m') || '';
+    var backendPath = localStorage.getItem('f7p_backend_path_9x7k2m') || '';
+    var githubPath = localStorage.getItem('f7p_gh_path_9x7k2m') || '';
+    
+    var fileInput = document.querySelector('input[name="saveas"]');
+    var githubFullPath = document.getElementById('github_full_path');
+    var btn = document.getElementById('pushToGitBtn');
+    
+    if (!githubFullPath) return;
+    
+    var fullPath = '';
+    var isValid = false;
+    
+    if (!token || !repo || !serverPath) {
+        fullPath = '⚠️ Setup GitHub API first (⋮ → GitHub API)';
+        isValid = false;
+    } else if (!fileInput || !fileInput.value) {
+        fullPath = '❌ No file selected';
+        isValid = false;
+    } else {
+        var filePath = fileInput.value;
+        var fileName = filePath.split('/').pop();
+        var ext = fileName.split('.').pop().toLowerCase();
+        
+        var backendExts = ['php', 'phtml', 'php3', 'php4', 'php5', 'php7', 'phps', 'php8', 
+                          'htaccess', 'htpasswd', 'env', 'ini', 'conf', 'config', 'cfg',
+                          'yaml', 'yml', 'sql', 'db', 'py', 'rb', 'pl', 'cgi', 'sh', 'bash', 'zsh'];
+        var isBackend = backendExts.includes(ext);
+        
+        var githubPathToUse = '';
+        if (dirMode === 'multi') {
+            githubPathToUse = isBackend ? backendPath : frontendPath;
+        } else {
+            githubPathToUse = githubPath;
+        }
+        
+        if (!githubPathToUse) {
+            fullPath = '⚠️ No GitHub directory set for this file type';
+            isValid = false;
+        } else if (filePath.startsWith(serverPath)) {
+            var relativePath = filePath.substring(serverPath.length);
+            if (relativePath.startsWith('/') || relativePath.startsWith('\\')) {
+                relativePath = relativePath.substring(1);
             }
             
-            window.addEventListener('storage', function(e) {
-                if (e.key && e.key.startsWith('f7p_gh_')) {
-                    setTimeout(updatePaths, 100);
-                }
-            });
+            var finalPath = githubPathToUse;
+            if (!finalPath.endsWith('/')) finalPath += '/';
+            finalPath += relativePath;
             
-            setTimeout(updatePaths, 200);
-            setTimeout(initPushButton, 300);
+            var typeLabel = dirMode === 'multi' ? ' [' + (isBackend ? 'BACKEND' : 'FRONTEND') + ']' : '';
+            
+            fullPath = 'github.com/' + repo + '/' + finalPath + typeLabel;
+            isValid = true;
+        } else {
+            fullPath = '🚫 File outside Server Path';
+            isValid = false;
+        }
+    }
+    
+    githubFullPath.value = fullPath;
+    githubFullPath.style.color = isValid ? '#0066cc' : '#dc3545';
+    githubFullPath.dataset.isValid = isValid ? 'true' : 'false';
+    
+    if (btn) {
+        if (isValid && fullPath && fullPath !== '⚠️ Setup GitHub API first (⋮ → GitHub API)' && fullPath !== '❌ No file selected') {
+            btn.disabled = false;
+            btn.style.opacity = '1';
+            btn.style.cursor = 'pointer';
+            btn.style.background = '#2b3137';
+        } else {
+            btn.disabled = true;
+            btn.style.opacity = '0.5';
+            btn.style.cursor = 'not-allowed';
+        }
+    }
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    var saveasInput = document.querySelector('input[name="saveas"]');
+    if (saveasInput) {
+        saveasInput.addEventListener('change', function() {
+            setTimeout(updatePaths, 100);
         });
-
-        document.addEventListener('DOMContentLoaded', function() {
-            var breadcrumb = document.querySelector('#header .breadcrumb');
-            if (breadcrumb) {
-                setTimeout(function() {
-                    breadcrumb.scrollLeft = breadcrumb.scrollWidth;
-                }, 100);
-            }
+        saveasInput.addEventListener('input', function() {
+            setTimeout(updatePaths, 100);
         });
+    }
+    
+    window.addEventListener('storage', function(e) {
+        if (e.key && e.key.startsWith('f7p_gh_')) {
+            setTimeout(updatePaths, 100);
+        }
+    });
+    
+    setTimeout(updatePaths, 200);
+    setTimeout(initPushButton, 300);
+});
 
-        function toggleRename(id) {
-            var link = document.getElementById(id + '_link');
-            var form = document.getElementById(id + '_form');
-            
-            if (link && form) {
-                if (form.style.display === 'none' || form.style.display === '') {
-                    form.style.display = 'inline-block';
-                    form.classList.add('show');
-                    if (link) link.style.display = 'none';
-                    var input = form.querySelector('input[name="newname"]');
-                    if (input) {
-                        setTimeout(function() { input.focus(); input.select(); }, 150);
-                    }
-                } else {
-                    form.style.display = 'none';
-                    form.classList.remove('show');
-                    if (link) link.style.display = 'inline';
-                }
+document.addEventListener('DOMContentLoaded', function() {
+    var breadcrumb = document.querySelector('#header .breadcrumb');
+    if (breadcrumb) {
+        setTimeout(function() {
+            breadcrumb.scrollLeft = breadcrumb.scrollWidth;
+        }, 100);
+    }
+});
+
+function toggleRename(id) {
+    var link = document.getElementById(id + '_link');
+    var form = document.getElementById(id + '_form');
+    
+    if (link && form) {
+        if (form.style.display === 'none' || form.style.display === '') {
+            form.style.display = 'inline-block';
+            form.classList.add('show');
+            if (link) link.style.display = 'none';
+            var input = form.querySelector('input[name="newname"]');
+            if (input) {
+                setTimeout(function() { input.focus(); input.select(); }, 150);
             }
+        } else {
+            form.style.display = 'none';
+            form.classList.remove('show');
+            if (link) link.style.display = 'inline';
         }
+    }
+}
 
-        function confirmDelete(name, type) {
-            return confirm('Move to the hell?\n\n' + name);
-        }
+function confirmDelete(name, type) {
+    return confirm('Move to the hell?\n\n' + name);
+}
+
 function createNewFolder(currentDir) {
     var folderName = prompt('Enter new folder name:', '');
     if (folderName !== null && folderName.trim() !== '') {
@@ -145,68 +172,68 @@ function createNewFile(currentDir) {
         alert('File name cannot be empty!');
     }
 }
-        function toggleDropdown() {
-            var menu = document.getElementById('dropdown-menu');
-            if (menu) {
-                menu.classList.toggle('open');
-            }
+
+function toggleDropdown() {
+    var menu = document.getElementById('dropdown-menu');
+    if (menu) {
+        menu.classList.toggle('open');
+    }
+}
+
+document.addEventListener('click', function(e) {
+    var dropdown = document.querySelector('.dropdown');
+    var menu = document.getElementById('dropdown-menu');
+    if (dropdown && menu) {
+        if (!dropdown.contains(e.target)) {
+            menu.classList.remove('open');
+        }
+    }
+});
+
+function toggleCommand() {
+    var bar = document.getElementById('command-bar');
+    if (bar) {
+        bar.classList.toggle('show');
+        if (bar.classList.contains('show')) {
+            var cmd = document.getElementById('cmd');
+            if (cmd) setTimeout(function() { cmd.focus(); }, 100);
+        }
+    }
+}
+
+function goToRoot() {
+    window.location.href = '?y=/';
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    document.addEventListener('click', function(e) {
+        var link = e.target.closest('a');
+        if (!link) return;
+        if (link.target === '_blank') return;
+        if (link.hasAttribute('data-no-ajax')) return;
+        if (link.getAttribute('href') === '#') return;
+        if (link.getAttribute('href').indexOf('javascript:') === 0) return;
+
+        var url = link.getAttribute('href');
+        if (!url || url.indexOf('?') === -1) return;
+
+        e.preventDefault();
+
+        if (window.history && window.history.pushState) {
+            window.history.pushState({ url: url }, '', url);
         }
 
-        document.addEventListener('click', function(e) {
-            var dropdown = document.querySelector('.dropdown');
-            var menu = document.getElementById('dropdown-menu');
-            if (dropdown && menu) {
-                if (!dropdown.contains(e.target)) {
-                    menu.classList.remove('open');
-                }
-            }
-        });
+        loadContent(url);
+    });
 
-        function toggleCommand() {
-            var bar = document.getElementById('command-bar');
-            if (bar) {
-                bar.classList.toggle('show');
-                if (bar.classList.contains('show')) {
-                    var cmd = document.getElementById('cmd');
-                    if (cmd) setTimeout(function() { cmd.focus(); }, 100);
-                }
-            }
+    window.addEventListener('popstate', function(e) {
+        if (e.state && e.state.url) {
+            loadContent(e.state.url);
+        } else {
+            loadContent(window.location.href);
         }
-
-        function goToRoot() {
-            window.location.href = '?y=/';
-        }
-
-        document.addEventListener('DOMContentLoaded', function() {
-            document.addEventListener('click', function(e) {
-                var link = e.target.closest('a');
-                if (!link) return;
-                if (link.target === '_blank') return;
-                if (link.hasAttribute('data-no-ajax')) return;
-                if (link.getAttribute('href') === '#') return;
-                if (link.getAttribute('href').indexOf('javascript:') === 0) return;
-
-                var url = link.getAttribute('href');
-                if (!url || url.indexOf('?') === -1) return;
-
-                e.preventDefault();
-
-                if (window.history && window.history.pushState) {
-                    window.history.pushState({ url: url }, '', url);
-                }
-
-                loadContent(url);
-            });
-
-            window.addEventListener('popstate', function(e) {
-                if (e.state && e.state.url) {
-                    loadContent(e.state.url);
-                } else {
-                    loadContent(window.location.href);
-                }
-            });
-        });
-
+    });
+});
 
 function saveScrollPosition(url) {
     var content = document.getElementById('content');
@@ -368,7 +395,7 @@ document.addEventListener('click', function(e) {
     }
 });
 
-        function pushToGitHub() {
+function pushToGitHub() {
     var githubFullPath = document.getElementById('github_full_path');
     var fileInput = document.querySelector('input[name="saveas"]');
     var contentTextarea = document.querySelector('textarea[name="content_plain"]');
@@ -401,6 +428,7 @@ document.addEventListener('click', function(e) {
     
     var fullPath = githubFullPath.value;
     var githubPath = fullPath.replace('github.com/' + repo + '/', '');
+    githubPath = githubPath.replace(/ \[.*\]$/, '');
     var fileName = filePath.split('/').pop();
     
     var btn = document.getElementById('pushToGitBtn');
@@ -490,108 +518,110 @@ document.addEventListener('click', function(e) {
     });
 }
 
-        function showRenameAlert(filename, fullpath, currentDir) {
-            var newName = prompt(filename, filename);
-            
-            if (newName !== null && newName !== '' && newName !== filename) {
-                var form = document.createElement('form');
-                form.method = 'POST';
-                form.action = '?y=' + encodeURIComponent(currentDir);
-                
-                var oldInput = document.createElement('input');
-                oldInput.type = 'hidden';
-                oldInput.name = 'oldname';
-                oldInput.value = filename;
-                
-                var newInput = document.createElement('input');
-                newInput.type = 'hidden';
-                newInput.name = 'newname';
-                newInput.value = newName;
-                
-                var dirInput = document.createElement('input');
-                dirInput.type = 'hidden';
-                dirInput.name = 'current_dir';
-                dirInput.value = currentDir;
-                
-                var renameInput = document.createElement('input');
-                renameInput.type = 'hidden';
-                renameInput.name = 'rename';
-                renameInput.value = '1';
-                
-                form.appendChild(oldInput);
-                form.appendChild(newInput);
-                form.appendChild(dirInput);
-                form.appendChild(renameInput);
-                document.body.appendChild(form);
-                form.submit();
-            } else if (newName === '') {
-                alert('Nama file tidak boleh kosong!');
-            }
-        }
-
-        function vibratePhone(duration) {
-            duration = duration || 10;
-            if (navigator.vibrate) {
-                navigator.vibrate(duration);
-            }
-        }
-
-        document.addEventListener('DOMContentLoaded', function() {
-            var clickableElements = document.querySelectorAll(
-                'button, .btn-icon, .dropdown-toggle, .inputzbut, ' +
-                'a[href], .brand, [onclick], .dropdown-menu a'
-            );
-            
-            clickableElements.forEach(function(el) {
-                el.addEventListener('click', function(e) {
-                    vibratePhone(10);
-                });
-            });
-setTimeout(function() {
-    var btn = document.getElementById('pushToGitBtn');
-    var input = document.getElementById('github_full_path');
-    if (btn && input) {
-        if (input.dataset.isValid === 'true' && input.value && input.value !== 'Loading...' && input.value !== '') {
-            btn.disabled = false;
-            btn.style.opacity = '1';
-            btn.style.cursor = 'pointer';
-            btn.style.background = '#2b3137';
-        } else {
-            btn.disabled = true;
-            btn.style.opacity = '0.5';
-            btn.style.cursor = 'not-allowed';
-        }
+function showRenameAlert(filename, fullpath, currentDir) {
+    var newName = prompt(filename, filename);
+    
+    if (newName !== null && newName !== '' && newName !== filename) {
+        var form = document.createElement('form');
+        form.method = 'POST';
+        form.action = '?y=' + encodeURIComponent(currentDir);
+        
+        var oldInput = document.createElement('input');
+        oldInput.type = 'hidden';
+        oldInput.name = 'oldname';
+        oldInput.value = filename;
+        
+        var newInput = document.createElement('input');
+        newInput.type = 'hidden';
+        newInput.name = 'newname';
+        newInput.value = newName;
+        
+        var dirInput = document.createElement('input');
+        dirInput.type = 'hidden';
+        dirInput.name = 'current_dir';
+        dirInput.value = currentDir;
+        
+        var renameInput = document.createElement('input');
+        renameInput.type = 'hidden';
+        renameInput.name = 'rename';
+        renameInput.value = '1';
+        
+        form.appendChild(oldInput);
+        form.appendChild(newInput);
+        form.appendChild(dirInput);
+        form.appendChild(renameInput);
+        document.body.appendChild(form);
+        form.submit();
+    } else if (newName === '') {
+        alert('Nama file tidak boleh kosong!');
     }
-}, 500);
-            var observer = new MutationObserver(function(mutations) {
-                mutations.forEach(function(mutation) {
-                    mutation.addedNodes.forEach(function(node) {
-                        if (node.nodeType === 1) {
-                            var newClickables = node.querySelectorAll(
-                                'button, .btn-icon, .dropdown-toggle, .inputzbut, ' +
-                                'a[href], [onclick]'
-                            );
-                            newClickables.forEach(function(el) {
-                                el.addEventListener('click', function(e) {
-                                    vibratePhone(10);
-                                });
-                            });
-                           
-                            if (node.matches && node.matches(
-                                'button, .btn-icon, .dropdown-toggle, .inputzbut, ' +
-                                'a[href], [onclick]'
-                            )) {
-                                node.addEventListener('click', function(e) {
-                                    vibratePhone(10);
-                                });
-                            }
-                        }
+}
+
+function vibratePhone(duration) {
+    duration = duration || 10;
+    if (navigator.vibrate) {
+        navigator.vibrate(duration);
+    }
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    var clickableElements = document.querySelectorAll(
+        'button, .btn-icon, .dropdown-toggle, .inputzbut, ' +
+        'a[href], .brand, [onclick], .dropdown-menu a'
+    );
+    
+    clickableElements.forEach(function(el) {
+        el.addEventListener('click', function(e) {
+            vibratePhone(10);
+        });
+    });
+    
+    setTimeout(function() {
+        var btn = document.getElementById('pushToGitBtn');
+        var input = document.getElementById('github_full_path');
+        if (btn && input) {
+            if (input.dataset.isValid === 'true' && input.value && input.value !== 'Loading...' && input.value !== '') {
+                btn.disabled = false;
+                btn.style.opacity = '1';
+                btn.style.cursor = 'pointer';
+                btn.style.background = '#2b3137';
+            } else {
+                btn.disabled = true;
+                btn.style.opacity = '0.5';
+                btn.style.cursor = 'not-allowed';
+            }
+        }
+    }, 500);
+    
+    var observer = new MutationObserver(function(mutations) {
+        mutations.forEach(function(mutation) {
+            mutation.addedNodes.forEach(function(node) {
+                if (node.nodeType === 1) {
+                    var newClickables = node.querySelectorAll(
+                        'button, .btn-icon, .dropdown-toggle, .inputzbut, ' +
+                        'a[href], [onclick]'
+                    );
+                    newClickables.forEach(function(el) {
+                        el.addEventListener('click', function(e) {
+                            vibratePhone(10);
+                        });
                     });
-                });
-            });
-            
-            observer.observe(document.body, {
-                childList: true,
-                subtree: true
+                   
+                    if (node.matches && node.matches(
+                        'button, .btn-icon, .dropdown-toggle, .inputzbut, ' +
+                        'a[href], [onclick]'
+                    )) {
+                        node.addEventListener('click', function(e) {
+                            vibratePhone(10);
+                        });
+                    }
+                }
             });
         });
+    });
+    
+    observer.observe(document.body, {
+        childList: true,
+        subtree: true
+    });
+});
