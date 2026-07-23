@@ -86,6 +86,17 @@ function updatePaths() {
     githubFullPath.style.color = isValid ? '#0066cc' : '#dc3545';
     githubFullPath.dataset.isValid = isValid ? 'true' : 'false';
     
+    function doScroll() {
+        if (githubFullPath) {
+            githubFullPath.scrollLeft = githubFullPath.scrollWidth;
+        }
+    }
+    
+    doScroll();
+    setTimeout(doScroll, 10);
+    setTimeout(doScroll, 50);
+    setTimeout(doScroll, 100);
+    
     if (btn) {
         if (isValid && fullPath && fullPath !== '⚠️ Setup GitHub API first (⋮ → GitHub API)' && fullPath !== '❌ No file selected') {
             btn.disabled = false;
@@ -100,6 +111,144 @@ function updatePaths() {
     }
 }
 
+function pushToGitHub() {
+    var githubFullPath = document.getElementById('github_full_path');
+    var fileInput = document.querySelector('input[name="saveas"]');
+    var contentTextarea = document.querySelector('textarea[name="content_plain"]');
+    
+    if (!githubFullPath) {
+        alert('Element github_full_path not found!');
+        return;
+    }
+    if (!fileInput) {
+        alert('Element saveas not found!');
+        return;
+    }
+    if (!contentTextarea) {
+        alert('Element content_plain not found!');
+        return;
+    }
+    if (githubFullPath.dataset.isValid !== 'true') {
+        alert('Cannot push to GitHub!\n\nPlease check:\n1. GitHub API settings (⋮ → GitHub API)\n2. File must be inside Server Path\n3. Server Path and GitHub Path must be set');
+        return;
+    }
+    
+    var token = localStorage.getItem('f7p_gh_token_9x7k2m');
+    var repo = localStorage.getItem('f7p_gh_repo_9x7k2m');
+    var branch = localStorage.getItem('f7p_gh_branch_9x7k2m') || 'main';
+    var filePath = fileInput.value;
+    var content = contentTextarea.value;
+    
+    var fullPath = githubFullPath.value;
+    var githubPath = fullPath.replace('github.com/' + repo + '/', '');
+    githubPath = githubPath.replace(/ \[.*\]$/, '');
+    var fileName = filePath.split('/').pop();
+    
+    var btn = document.getElementById('pushToGitBtn');
+    if (!btn) return;
+    
+    var originalText = btn.textContent;
+    
+    function updateStatus(msg) {
+        var statusDiv = document.getElementById('saveStatus');
+        if (statusDiv) {
+            statusDiv.innerHTML = msg;
+            statusDiv.style.display = 'block';
+        } else {
+            var div = document.querySelector('#editForm div[style*="text-align:right"]');
+            if (div) {
+                div.innerHTML = msg;
+            }
+        }
+    }
+    
+    
+    btn.disabled = true;
+pushToGitBtn.value = 'Pushing...';
+    btn.style.opacity = '0.7';
+    
+    
+    var encodedContent = btoa(unescape(encodeURIComponent(content)));
+    var apiUrl = 'https://api.github.com/repos/' + repo + '/contents/' + githubPath;
+    
+    fetch(apiUrl + '?ref=' + branch, {
+        headers: {
+            'Authorization': 'token ' + token,
+            'Accept': 'application/vnd.github.v3+json'
+        }
+    })
+    .then(function(response) {
+        if (response.status === 404) {
+            return { sha: null };
+        } else if (!response.ok) {
+            throw new Error('GitHub API error: ' + response.status);
+        }
+        return response.json();
+    })
+    .then(function(data) {
+        var payload = {
+            message: 'Update ' + fileName + ' via F7P',
+            content: encodedContent,
+            branch: branch
+        };
+        if (data.sha) {
+            payload.sha = data.sha;
+        }
+        return fetch(apiUrl, {
+            method: 'PUT',
+            headers: {
+                'Authorization': 'token ' + token,
+                'Content-Type': 'application/json',
+                'Accept': 'application/vnd.github.v3+json'
+            },
+            body: JSON.stringify(payload)
+        });
+    })
+    .then(function(response) {
+        if (!response.ok) {
+            return response.json().then(function(err) {
+                throw new Error(err.message || 'Push failed');
+            });
+        }
+        return response.json();
+    })
+    .then(function(data) {
+        var now = new Date();
+        var h = now.getHours();
+        var m = String(now.getMinutes()).padStart(2, '0');
+        var s = String(now.getSeconds()).padStart(2, '0');
+        var ampm = h >= 12 ? 'PM' : 'AM';
+        h = h % 12 || 12;
+        var timeStr = h + ':' + m + ':' + s + ' ' + ampm;
+        
+        var repoUrl = 'https://github.com/' + repo + '/blob/' + branch + '/' + githubPath;
+        var linkHtml = '✅<a href="' + repoUrl + '" target="_blank" style="color:#0066cc;text-decoration:underline dotted #0066cc;font-size:12px;display:inline-block;max-width:330px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;vertical-align:middle;">' + repoUrl + '</a>';
+        
+        updateStatus(linkHtml + '<strong>' + timeStr + '</strong>');
+        
+        pushToGitBtn.value = 'Push to Git';
+        btn.style.background = '#2b3137';
+        btn.style.opacity = '1';
+        btn.disabled = false;
+    })
+    .catch(function(error) {
+        pushToGitBtn.value = 'Push to Git';
+        btn.style.background = '#dc3545';
+        btn.style.opacity = '1';
+        btn.disabled = false;
+        var errorMsg = error.message;
+        if (errorMsg.includes('403')) {
+            errorMsg = 'Permission denied. Check your token permissions (need "repo" scope)';
+        } else if (errorMsg.includes('404')) {
+            errorMsg = 'Repository not found. Check repo name format: username/repo';
+        }
+        updateStatus('❌ Push failed: ' + errorMsg);
+        setTimeout(function() {
+            btn.style.background = '#2b3137';
+        }, 3000);
+    });
+}
+
 document.addEventListener('DOMContentLoaded', function() {
     var saveasInput = document.querySelector('input[name="saveas"]');
     if (saveasInput) {
@@ -110,13 +259,11 @@ document.addEventListener('DOMContentLoaded', function() {
             setTimeout(updatePaths, 100);
         });
     }
-    
     window.addEventListener('storage', function(e) {
         if (e.key && e.key.startsWith('f7p_gh_')) {
             setTimeout(updatePaths, 100);
         }
     });
-    
     setTimeout(updatePaths, 200);
     setTimeout(initPushButton, 300);
 });
@@ -133,7 +280,6 @@ document.addEventListener('DOMContentLoaded', function() {
 function toggleRename(id) {
     var link = document.getElementById(id + '_link');
     var form = document.getElementById(id + '_form');
-    
     if (link && form) {
         if (form.style.display === 'none' || form.style.display === '') {
             form.style.display = 'inline-block';
@@ -213,19 +359,14 @@ document.addEventListener('DOMContentLoaded', function() {
         if (link.hasAttribute('data-no-ajax')) return;
         if (link.getAttribute('href') === '#') return;
         if (link.getAttribute('href').indexOf('javascript:') === 0) return;
-
         var url = link.getAttribute('href');
         if (!url || url.indexOf('?') === -1) return;
-
         e.preventDefault();
-
         if (window.history && window.history.pushState) {
             window.history.pushState({ url: url }, '', url);
         }
-
         loadContent(url);
     });
-
     window.addEventListener('popstate', function(e) {
         if (e.state && e.state.url) {
             loadContent(e.state.url);
@@ -238,12 +379,10 @@ document.addEventListener('DOMContentLoaded', function() {
 function saveScrollPosition(url) {
     var content = document.getElementById('content');
     if (!content) return;
-    
     var scrollData = {
         top: content.scrollTop,
         url: url || window.location.href
     };
-    
     try {
         var key = 'f7p_scroll_' + encodeURIComponent(url || window.location.href);
         localStorage.setItem(key, JSON.stringify(scrollData));
@@ -255,13 +394,11 @@ function limitScrollData() {
     try {
         var keys = Object.keys(localStorage);
         var scrollKeys = [];
-        
         keys.forEach(function(key) {
             if (key.startsWith('f7p_scroll_')) {
                 scrollKeys.push(key);
             }
         });
-        
         if (scrollKeys.length > 2) {
             scrollKeys.sort();
             var toDelete = scrollKeys.slice(0, scrollKeys.length - 2);
@@ -288,12 +425,10 @@ var originalLoadContent = window.loadContent;
 window.loadContent = function(url) {
     var content = document.getElementById('content');
     if (!content) return;
-    
     var currentUrl = window.location.href;
     if (currentUrl) {
         saveScrollPosition(currentUrl);
     }
-    
     fetch(url)
         .then(function(response) {
             return response.text();
@@ -301,12 +436,10 @@ window.loadContent = function(url) {
         .then(function(html) {
             var parser = new DOMParser();
             var doc = parser.parseFromString(html, 'text/html');
-            
             var newContent = doc.getElementById('content');
             if (newContent) {
                 content.innerHTML = newContent.innerHTML;
             }
-            
             var newBreadcrumb = doc.querySelector('#header .breadcrumb');
             if (newBreadcrumb) {
                 var oldBreadcrumb = document.querySelector('#header .breadcrumb');
@@ -317,7 +450,6 @@ window.loadContent = function(url) {
                     }, 50);
                 }
             }
-            
             var newFooter = doc.querySelector('#footer');
             if (newFooter) {
                 var oldFooter = document.querySelector('#footer');
@@ -325,7 +457,6 @@ window.loadContent = function(url) {
                     oldFooter.innerHTML = newFooter.innerHTML;
                 }
             }
-            
             var scripts = content.querySelectorAll('script');
             scripts.forEach(function(script) {
                 var newScript = document.createElement('script');
@@ -336,7 +467,6 @@ window.loadContent = function(url) {
                 }
                 document.body.appendChild(newScript);
             });
-            
             var savedPosition = getScrollPosition(url);
             if (savedPosition && savedPosition.top > 0) {
                 setTimeout(function() {
@@ -383,169 +513,38 @@ document.addEventListener('DOMContentLoaded', function() {
 document.addEventListener('click', function(e) {
     var link = e.target.closest('a[href]');
     if (!link) return;
-    
     var href = link.getAttribute('href');
     if (!href || href === '#' || href.indexOf('javascript:') === 0) return;
     if (link.hasAttribute('data-no-ajax')) return;
     if (link.target === '_blank') return;
-    
     var content = document.getElementById('content');
     if (content) {
         saveScrollPosition(window.location.href);
     }
 });
 
-function pushToGitHub() {
-    var githubFullPath = document.getElementById('github_full_path');
-    var fileInput = document.querySelector('input[name="saveas"]');
-    var contentTextarea = document.querySelector('textarea[name="content_plain"]');
-    
-    if (!githubFullPath) {
-        alert('Element github_full_path not found!');
-        return;
-    }
-    
-    if (!fileInput) {
-        alert('Element saveas not found!');
-        return;
-    }
-    
-    if (!contentTextarea) {
-        alert('Element content_plain not found!');
-        return;
-    }
-    
-    if (githubFullPath.dataset.isValid !== 'true') {
-        alert('Cannot push to GitHub!\n\nPlease check:\n1. GitHub API settings (⋮ → GitHub API)\n2. File must be inside Server Path\n3. Server Path and GitHub Path must be set');
-        return;
-    }
-    
-    var token = localStorage.getItem('f7p_gh_token_9x7k2m');
-    var repo = localStorage.getItem('f7p_gh_repo_9x7k2m');
-    var branch = localStorage.getItem('f7p_gh_branch_9x7k2m') || 'main';
-    var filePath = fileInput.value;
-    var content = contentTextarea.value;
-    
-    var fullPath = githubFullPath.value;
-    var githubPath = fullPath.replace('github.com/' + repo + '/', '');
-    githubPath = githubPath.replace(/ \[.*\]$/, '');
-    var fileName = filePath.split('/').pop();
-    
-    var btn = document.getElementById('pushToGitBtn');
-    if (!btn) return;
-    
-    var originalText = btn.textContent;
-    btn.textContent = 'Uploading...';
-    btn.disabled = true;
-    btn.style.opacity = '0.7';
-    
-    var encodedContent = btoa(unescape(encodeURIComponent(content)));
-    var apiUrl = 'https://api.github.com/repos/' + repo + '/contents/' + githubPath;
-    
-    fetch(apiUrl + '?ref=' + branch, {
-        headers: {
-            'Authorization': 'token ' + token,
-            'Accept': 'application/vnd.github.v3+json'
-        }
-    })
-    .then(function(response) {
-        if (response.status === 404) {
-            return { sha: null };
-        } else if (!response.ok) {
-            throw new Error('GitHub API error: ' + response.status);
-        }
-        return response.json();
-    })
-    .then(function(data) {
-        var payload = {
-            message: 'Update ' + fileName + ' via F7P',
-            content: encodedContent,
-            branch: branch
-        };
-        
-        if (data.sha) {
-            payload.sha = data.sha;
-        }
-        
-        return fetch(apiUrl, {
-            method: 'PUT',
-            headers: {
-                'Authorization': 'token ' + token,
-                'Content-Type': 'application/json',
-                'Accept': 'application/vnd.github.v3+json'
-            },
-            body: JSON.stringify(payload)
-        });
-    })
-    .then(function(response) {
-        if (!response.ok) {
-            return response.json().then(function(err) {
-                throw new Error(err.message || 'Push failed');
-            });
-        }
-        return response.json();
-    })
-    .then(function(data) {
-        btn.textContent = 'Pushed!';
-        btn.style.background = '#28a745';
-        btn.style.opacity = '1';
-        var url = data.content.html_url || '';
-        alert('Success...\n' + url);
-        setTimeout(function() {
-            btn.textContent = 'Push to Git';
-            btn.style.background = '#2b3137';
-            btn.disabled = false;
-            btn.style.opacity = '1';
-        }, 3000);
-    })
-    .catch(function(error) {
-        btn.textContent = 'Failed';
-        btn.style.background = '#dc3545';
-        btn.style.opacity = '1';
-        var errorMsg = error.message;
-        if (errorMsg.includes('403')) {
-            errorMsg = 'Permission denied. Check your token permissions (need "repo" scope)';
-        } else if (errorMsg.includes('404')) {
-            errorMsg = 'Repository not found. Check repo name format: username/repo';
-        }
-        alert('Error: ' + errorMsg + '\n\nTarget: ' + fullPath);
-        setTimeout(function() {
-            btn.textContent = 'Push to Git';
-            btn.style.background = '#2b3137';
-            btn.disabled = false;
-            btn.style.opacity = '1';
-        }, 3000);
-    });
-}
-
 function showRenameAlert(filename, fullpath, currentDir) {
     var newName = prompt(filename, filename);
-    
     if (newName !== null && newName !== '' && newName !== filename) {
         var form = document.createElement('form');
         form.method = 'POST';
         form.action = '?y=' + encodeURIComponent(currentDir);
-        
         var oldInput = document.createElement('input');
         oldInput.type = 'hidden';
         oldInput.name = 'oldname';
         oldInput.value = filename;
-        
         var newInput = document.createElement('input');
         newInput.type = 'hidden';
         newInput.name = 'newname';
         newInput.value = newName;
-        
         var dirInput = document.createElement('input');
         dirInput.type = 'hidden';
         dirInput.name = 'current_dir';
         dirInput.value = currentDir;
-        
         var renameInput = document.createElement('input');
         renameInput.type = 'hidden';
         renameInput.name = 'rename';
         renameInput.value = '1';
-        
         form.appendChild(oldInput);
         form.appendChild(newInput);
         form.appendChild(dirInput);
@@ -569,13 +568,11 @@ document.addEventListener('DOMContentLoaded', function() {
         'button, .btn-icon, .dropdown-toggle, .inputzbut, ' +
         'a[href], .brand, [onclick], .dropdown-menu a'
     );
-    
     clickableElements.forEach(function(el) {
         el.addEventListener('click', function(e) {
             vibratePhone(10);
         });
     });
-    
     setTimeout(function() {
         var btn = document.getElementById('pushToGitBtn');
         var input = document.getElementById('github_full_path');
@@ -592,7 +589,6 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         }
     }, 500);
-    
     var observer = new MutationObserver(function(mutations) {
         mutations.forEach(function(mutation) {
             mutation.addedNodes.forEach(function(node) {
@@ -606,7 +602,6 @@ document.addEventListener('DOMContentLoaded', function() {
                             vibratePhone(10);
                         });
                     });
-                   
                     if (node.matches && node.matches(
                         'button, .btn-icon, .dropdown-toggle, .inputzbut, ' +
                         'a[href], [onclick]'
@@ -619,7 +614,6 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         });
     });
-    
     observer.observe(document.body, {
         childList: true,
         subtree: true
