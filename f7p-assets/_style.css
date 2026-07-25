@@ -109,3 +109,31 @@ a:active{opacity:0.6}
 .bookmark-header{padding:10px 12px;background:#f8f9fa;border-bottom:2px solid #06c;font-weight:bold;color:#333;cursor:pointer;transition:background .2s;font-size:14px}
 .bookmark-header:hover{background:#e8ecf0}
 .bookmark-empty{padding:20px;text-align:center;color:#999;font-size:13px}
+
+.upload-container{max-width:600px;margin:0 auto;padding:10px}
+.upload-form{background:white;padding:16px 20px;border-radius:12px;margin-bottom:12px;box-shadow:0 2px 8px rgba(0,0,0,0.06)}
+.upload-form-zip{border:2px solid #ff9800}
+.upload-msg{padding:8px 12px;border-radius:6px;margin-bottom:10px;font-size:13px}
+.upload-msg-success{background:#d4edda;color:#155724;border:1px solid #c3e6cb}
+.upload-msg-error{background:#f8d7da;color:#721c24;border:1px solid #f5c6cb}
+.upload-row{display:flex;gap:8px;align-items:center}
+.upload-input-wrap{flex:1;position:relative;display:flex;align-items:center}
+.upload-input-wrap .inputz{flex:1;padding:10px 40px 10px 12px;width:100%}
+.upload-paste-btn{position:absolute;right:10px;cursor:pointer;font-size:18px;opacity:0.6;user-select:none}
+.upload-paste-btn:hover{opacity:1}
+.upload-select{width:65px;padding:10px 4px;flex-shrink:0;font-size:13px;text-align:center;background:#fff;border:1px solid #ccc;border-radius:6px;outline:none;cursor:pointer}
+.upload-select:focus{border-color:#0066cc;box-shadow:0 0 0 2px rgba(0,102,204,0.15)}
+.upload-btn-go{padding:10px 16px;background:#28a745;color:white;border:none;border-radius:6px;font-size:14px;font-weight:600;cursor:pointer;flex-shrink:0}
+.upload-btn-go:active{background:#1e7e34}
+.upload-btn-local{flex:1;padding:10px 12px;background:#0066cc;color:white;border:none;border-radius:6px;font-size:14px;font-weight:600;cursor:pointer;text-align:center}
+.upload-btn-local:active{background:#004d99}
+.upload-btn-zip{flex:1;padding:10px 12px;background:#ff9800;color:white;border:none;border-radius:6px;font-size:14px;font-weight:600;cursor:pointer;text-align:center}
+.upload-btn-zip:active{background:#e68900}
+.upload-btn-upload{padding:10px 20px;background:#0066cc;color:white;border:none;border-radius:6px;font-size:14px;font-weight:600;cursor:pointer;flex-shrink:0}
+.upload-btn-upload:active{background:#004d99}
+.upload-btn-extract{padding:10px 20px;background:#ff9800;color:white;border:none;border-radius:6px;font-size:14px;font-weight:600;cursor:pointer;flex-shrink:0}
+.upload-btn-extract:active{background:#e68900}
+.upload-file-count{font-size:13px;color:#666;white-space:nowrap;min-width:60px}
+.upload-file-count-local{color:#0066cc}
+.upload-file-count-zip{color:#ff9800}
+.upload-file-input{display:none}
