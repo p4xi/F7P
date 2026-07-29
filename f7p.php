@@ -1532,29 +1532,31 @@ elseif(isset($_GET['x']) && ($_GET['x'] == 'github')){
     
    
     if(isset($_POST['save_github_token'])){
-        $token = trim($_POST['github_token']);
-        $repo = trim($_POST['github_repo']);
-        $branch = trim($_POST['github_branch']);
-        $server_path = trim($_POST['github_server_path']);
-        $github_path = trim($_POST['github_path']);
-        $dir_mode = isset($_POST['dir_mode']) ? $_POST['dir_mode'] : 'single';
-        $frontend_path = trim($_POST['frontend_path']);
-        $backend_path = trim($_POST['backend_path']);
-        ?>
-        <script>
-        localStorage.setItem('f7p_gh_token_9x7k2m', '<?php echo addslashes($token); ?>');
-        localStorage.setItem('f7p_gh_repo_9x7k2m', '<?php echo addslashes($repo); ?>');
-        localStorage.setItem('f7p_gh_branch_9x7k2m', '<?php echo addslashes($branch); ?>');
-        localStorage.setItem('f7p_gh_server_path_9x7k2m', '<?php echo addslashes($server_path); ?>');
-        localStorage.setItem('f7p_gh_path_9x7k2m', '<?php echo addslashes($github_path); ?>');
-        localStorage.setItem('f7p_dir_mode_9x7k2m', '<?php echo addslashes($dir_mode); ?>');
-        localStorage.setItem('f7p_frontend_path_9x7k2m', '<?php echo addslashes($frontend_path); ?>');
-        localStorage.setItem('f7p_backend_path_9x7k2m', '<?php echo addslashes($backend_path); ?>');
-        window.location.href = '?y=<?php echo $pwd; ?>&x=github&saved=1';
-        </script>
-        <?php
-        exit;
-    }
+    $token = trim($_POST['github_token']);
+    $repo = trim($_POST['github_repo']);
+    $branch = trim($_POST['github_branch']);
+    $server_path = trim($_POST['github_server_path']);
+    $github_path = trim($_POST['github_path']);
+    $dir_mode = isset($_POST['dir_mode']) ? $_POST['dir_mode'] : 'single';
+    $frontend_path = trim($_POST['frontend_path']);
+    $backend_path = trim($_POST['backend_path']);
+    $backend_keyword = trim($_POST['backend_keyword']);
+    ?>
+    <script>
+    localStorage.setItem('f7p_gh_token_9x7k2m', '<?php echo addslashes($token); ?>');
+    localStorage.setItem('f7p_gh_repo_9x7k2m', '<?php echo addslashes($repo); ?>');
+    localStorage.setItem('f7p_gh_branch_9x7k2m', '<?php echo addslashes($branch); ?>');
+    localStorage.setItem('f7p_gh_server_path_9x7k2m', '<?php echo addslashes($server_path); ?>');
+    localStorage.setItem('f7p_gh_path_9x7k2m', '<?php echo addslashes($github_path); ?>');
+    localStorage.setItem('f7p_dir_mode_9x7k2m', '<?php echo addslashes($dir_mode); ?>');
+    localStorage.setItem('f7p_frontend_path_9x7k2m', '<?php echo addslashes($frontend_path); ?>');
+    localStorage.setItem('f7p_backend_path_9x7k2m', '<?php echo addslashes($backend_path); ?>');
+    localStorage.setItem('f7p_backend_keyword_9x7k2m', '<?php echo addslashes($backend_keyword); ?>');
+    window.location.href = '?y=<?php echo $pwd; ?>&x=github&saved=1';
+    </script>
+    <?php
+    exit;
+}
     ?>
     <div style="max-width:600px;margin:0 auto;">
         <h2 style="color:#0066cc;margin-bottom:16px;">GitHub API Settings <small>(saved on localStorage)</small></h2>
@@ -1589,9 +1591,7 @@ elseif(isset($_GET['x']) && ($_GET['x'] == 'github')){
                                 Multi Dir
                             </label>
                         </div>
-                        <div style="font-size:12px;color:#666;margin-top:4px;">
-                            All files in 1 directory or separate directory 
-                        </div>
+   
                     </td>
                 </tr>
                 <tr id="singleDirRow">
@@ -1604,26 +1604,35 @@ elseif(isset($_GET['x']) && ($_GET['x'] == 'github')){
                     </td>
                 </tr>
                 <tr id="multiDirRow" style="display:none;">
-                    <td style="vertical-align:top;padding-top:12px;">Multi Dir</td>
-                    <td>
-                        <div style="display:flex;flex-direction:column;gap:8px;">
-                            <div>
-                                <label style="font-size:13px;font-weight:bold;color:#0066cc;">Your Frontend directory on GitHub</label>
-                                <input class="inputz w-full" type="text" name="frontend_path" placeholder="frontend" id="frontend_path" />
-                                <div style="font-size:11px;color:#888;margin-top:2px;">
-                                    Auto detect on Edit Page: HTML, CSS, JS, Images, etc.
-                                </div>
-                            </div>
-                            <div>
-                                <label style="font-size:13px;font-weight:bold;color:#cc3333;">Your Backend directory on GitHub</label>
-                                <input class="inputz w-full" type="text" name="backend_path" placeholder="backend" id="backend_path" />
-                                <div style="font-size:11px;color:#888;margin-top:2px;">
-                                    Auto detect on Edit Page: PHP, .htaccess, .env, config, etc.
-                                </div>
-                            </div>
-                        </div>
-                    </td>
-                </tr>
+    <td style="vertical-align:top;padding-top:12px;">Multi Dir</td>
+    <td>
+        <div style="display:flex;flex-direction:column;gap:8px;">
+            <div>
+                <label style="font-size:13px;font-weight:bold;color:#0066cc;">Frontend directory on GitHub</label>
+                <input class="inputz w-full" type="text" name="frontend_path" placeholder="frontend" id="frontend_path" />
+                <div style="font-size:11px;color:#888;margin-top:2px;">
+                    Auto detect: HTML, CSS, JS, Images, etc.
+                </div>
+            </div>
+            <div>
+                <label style="font-size:13px;font-weight:bold;color:#cc3333;">Backend directory on GitHub</label>
+                <input class="inputz w-full" type="text" name="backend_path" placeholder="backend" id="backend_path" />
+                <div style="font-size:11px;color:#888;margin-top:2px;">
+                    Auto detect: PHP, .htaccess, .env, config, etc.
+                </div>
+            </div>
+            <div>
+                <label style="font-size:13px;font-weight:bold;color:#cc3333;">Always in backend, if DIR containing this word</label>
+                <input class="inputz w-full" type="text" name="backend_keyword" 
+                       placeholder="private-area, admin, secret, config" id="backend_keyword" />
+                <div style="font-size:11px;color:#888;margin-top:2px;">
+                    Comma separated keywords. (dir1,dir2, dir3, dir4)<br>
+                    
+                </div>
+            </div>
+        </div>
+    </td>
+</tr>
                 <tr>
                     <td style="vertical-align:top;padding-top:12px;">Server Path</td>
                     <td>
@@ -1632,7 +1641,7 @@ elseif(isset($_GET['x']) && ($_GET['x'] == 'github')){
                                id="github_server_path" 
                                value="<?php echo htmlspecialchars($suggested_server_path); ?>" />
                         <div style="font-size:12px;color:#666;margin-top:4px;">
-                            Full Directory link in this server<br>(suggested: <?php echo htmlspecialchars($suggested_server_path); ?>)
+                            Suggested: <?php echo htmlspecialchars($suggested_server_path); ?>
                         </div>
                     </td>
                 </tr>
@@ -1659,29 +1668,33 @@ elseif(isset($_GET['x']) && ($_GET['x'] == 'github')){
             }
         }
         document.addEventListener('DOMContentLoaded', function() {
-            var token = localStorage.getItem('f7p_gh_token_9x7k2m');
-            var repo = localStorage.getItem('f7p_gh_repo_9x7k2m');
-            var branch = localStorage.getItem('f7p_gh_branch_9x7k2m');
-            var serverPath = localStorage.getItem('f7p_gh_server_path_9x7k2m');
-            var githubPath = localStorage.getItem('f7p_gh_path_9x7k2m');
-            var dirMode = localStorage.getItem('f7p_dir_mode_9x7k2m');
-            var frontendPath = localStorage.getItem('f7p_frontend_path_9x7k2m');
-            var backendPath = localStorage.getItem('f7p_backend_path_9x7k2m');
-            if (token) document.getElementById('github_token').value = token;
-            if (repo) document.getElementById('github_repo').value = repo;
-            if (branch) document.getElementById('github_branch').value = branch;
-            if (serverPath) document.getElementById('github_server_path').value = serverPath;
-            if (githubPath) document.getElementById('github_path').value = githubPath;
-            if (frontendPath) document.getElementById('frontend_path').value = frontendPath;
-            if (backendPath) document.getElementById('backend_path').value = backendPath;
-            if (dirMode === 'multi') {
-                document.querySelector('input[name="dir_mode"][value="multi"]').checked = true;
-                toggleMultiDir(true);
-            } else {
-                document.querySelector('input[name="dir_mode"][value="single"]').checked = true;
-                toggleMultiDir(false);
-            }
-        });
+    var token = localStorage.getItem('f7p_gh_token_9x7k2m');
+    var repo = localStorage.getItem('f7p_gh_repo_9x7k2m');
+    var branch = localStorage.getItem('f7p_gh_branch_9x7k2m');
+    var serverPath = localStorage.getItem('f7p_gh_server_path_9x7k2m');
+    var githubPath = localStorage.getItem('f7p_gh_path_9x7k2m');
+    var dirMode = localStorage.getItem('f7p_dir_mode_9x7k2m');
+    var frontendPath = localStorage.getItem('f7p_frontend_path_9x7k2m');
+    var backendPath = localStorage.getItem('f7p_backend_path_9x7k2m');
+    var backendKeyword = localStorage.getItem('f7p_backend_keyword_9x7k2m');
+    
+    if (token) document.getElementById('github_token').value = token;
+    if (repo) document.getElementById('github_repo').value = repo;
+    if (branch) document.getElementById('github_branch').value = branch;
+    if (serverPath) document.getElementById('github_server_path').value = serverPath;
+    if (githubPath) document.getElementById('github_path').value = githubPath;
+    if (frontendPath) document.getElementById('frontend_path').value = frontendPath;
+    if (backendPath) document.getElementById('backend_path').value = backendPath;
+    if (backendKeyword) document.getElementById('backend_keyword').value = backendKeyword;
+    
+    if (dirMode === 'multi') {
+        document.querySelector('input[name="dir_mode"][value="multi"]').checked = true;
+        toggleMultiDir(true);
+    } else {
+        document.querySelector('input[name="dir_mode"][value="single"]').checked = true;
+        toggleMultiDir(false);
+    }
+});
         </script>
         
         <script src="f7p-assets/_github.js"></script>
