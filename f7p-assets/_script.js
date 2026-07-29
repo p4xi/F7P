@@ -26,6 +26,7 @@ function updatePaths() {
     var frontendPath = localStorage.getItem('f7p_frontend_path_9x7k2m') || '';
     var backendPath = localStorage.getItem('f7p_backend_path_9x7k2m') || '';
     var githubPath = localStorage.getItem('f7p_gh_path_9x7k2m') || '';
+    var backendKeyword = localStorage.getItem('f7p_backend_keyword_9x7k2m') || '';
     
     var fileInput = document.querySelector('input[name="saveas"]');
     var githubFullPath = document.getElementById('github_full_path');
@@ -52,9 +53,34 @@ function updatePaths() {
                           'yaml', 'yml', 'sql', 'db', 'py', 'rb', 'pl', 'cgi', 'sh', 'bash', 'zsh'];
         var isBackend = backendExts.includes(ext);
         
+       
+        var hasBackendKeyword = false;
+        if (dirMode === 'multi' && backendKeyword && backendKeyword.trim() !== '') {
+            var keywords = backendKeyword.split(',').map(function(k) { return k.trim(); });
+            var relativePathForCheck = '';
+            if (filePath.startsWith(serverPath)) {
+                relativePathForCheck = filePath.substring(serverPath.length);
+                if (relativePathForCheck.startsWith('/') || relativePathForCheck.startsWith('\\')) {
+                    relativePathForCheck = relativePathForCheck.substring(1);
+                }
+            }
+           
+            for (var i = 0; i < keywords.length; i++) {
+                if (keywords[i] && relativePathForCheck.toLowerCase().indexOf(keywords[i].toLowerCase()) !== -1) {
+                    hasBackendKeyword = true;
+                    break;
+                }
+            }
+        }
+        
         var githubPathToUse = '';
         if (dirMode === 'multi') {
-            githubPathToUse = isBackend ? backendPath : frontendPath;
+           
+            if (hasBackendKeyword) {
+                githubPathToUse = backendPath;
+            } else {
+                githubPathToUse = isBackend ? backendPath : frontendPath;
+            }
         } else {
             githubPathToUse = githubPath;
         }
@@ -72,7 +98,16 @@ function updatePaths() {
             if (!finalPath.endsWith('/')) finalPath += '/';
             finalPath += relativePath;
             
-            var typeLabel = dirMode === 'multi' ? ' [' + (isBackend ? 'BACKEND' : 'FRONTEND') + ']' : '';
+            var typeLabel = '';
+            if (dirMode === 'multi') {
+                if (hasBackendKeyword) {
+                    typeLabel = ' [BACKEND - ' + backendKeyword + ']';
+                } else if (isBackend) {
+                    typeLabel = ' [BACKEND]';
+                } else {
+                    typeLabel = ' [FRONTEND]';
+                }
+            }
             
             fullPath = 'github.com/' + repo + '/' + finalPath + typeLabel;
             isValid = true;
