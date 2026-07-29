@@ -116,16 +116,8 @@ function pushToGitHub() {
     var fileInput = document.querySelector('input[name="saveas"]');
     var contentTextarea = document.querySelector('textarea[name="content_plain"]');
     
-    if (!githubFullPath) {
-        alert('Element github_full_path not found!');
-        return;
-    }
-    if (!fileInput) {
-        alert('Element saveas not found!');
-        return;
-    }
-    if (!contentTextarea) {
-        alert('Element content_plain not found!');
+    if (!githubFullPath || !fileInput || !contentTextarea) {
+        alert('Elements not found!');
         return;
     }
     if (githubFullPath.dataset.isValid !== 'true') {
@@ -138,11 +130,13 @@ function pushToGitHub() {
     var branch = localStorage.getItem('f7p_gh_branch_9x7k2m') || 'main';
     var filePath = fileInput.value;
     var content = contentTextarea.value;
+    var fileName = filePath.split('/').pop();
+    var ext = fileName.split('.').pop().toLowerCase();
+    var isImage = ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp', 'svg', 'ico'].includes(ext);
     
     var fullPath = githubFullPath.value;
     var githubPath = fullPath.replace('github.com/' + repo + '/', '');
     githubPath = githubPath.replace(/ \[.*\]$/, '');
-    var fileName = filePath.split('/').pop();
     
     var btn = document.getElementById('pushToGitBtn');
     if (!btn) return;
@@ -162,12 +156,131 @@ function pushToGitHub() {
         }
     }
     
-    
     btn.disabled = true;
-pushToGitBtn.value = 'Pushing...';
+    btn.value = 'Pushing...';
     btn.style.opacity = '0.7';
     
+   
+    function pushContent(base64Content, sha) {
+        var apiUrl = 'https://api.github.com/repos/' + repo + '/contents/' + githubPath;
+        var payload = {
+            message: 'Update ' + fileName + ' via F7P',
+            content: base64Content,
+            branch: branch
+        };
+        if (sha) payload.sha = sha;
+        
+        fetch(apiUrl, {
+            method: 'PUT',
+            headers: {
+                'Authorization': 'token ' + token,
+                'Content-Type': 'application/json',
+                'Accept': 'application/vnd.github.v3+json'
+            },
+            body: JSON.stringify(payload)
+        })
+        .then(function(response) {
+            if (!response.ok) {
+                return response.json().then(function(err) {
+                    throw new Error(err.message || 'Push failed');
+                });
+            }
+            return response.json();
+        })
+        .then(function(data) {
+            var now = new Date();
+            var h = now.getHours();
+            var m = String(now.getMinutes()).padStart(2, '0');
+            var s = String(now.getSeconds()).padStart(2, '0');
+            var ampm = h >= 12 ? 'PM' : 'AM';
+            h = h % 12 || 12;
+            var timeStr = h + ':' + m + ':' + s + ' ' + ampm;
+            
+            var repoUrl = 'https://github.com/' + repo + '/blob/' + branch + '/' + githubPath;
+            var linkHtml = '✅<a href="' + repoUrl + '" target="_blank" style="color:#0066cc;text-decoration:underline dotted #0066cc;font-size:12px;display:inline-block;max-width:330px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;vertical-align:middle;">' + repoUrl + '</a>';
+            
+            updateStatus(linkHtml + ' ' + timeStr);
+            btn.value = 'Push to Git';
+            btn.style.background = '#2b3137';
+            btn.style.opacity = '1';
+            btn.disabled = false;
+        })
+        .catch(function(error) {
+            btn.value = 'Push to Git';
+            btn.style.background = '#dc3545';
+            btn.style.opacity = '1';
+            btn.disabled = false;
+            var errorMsg = error.message;
+            if (errorMsg.includes('403')) {
+                errorMsg = 'Permission denied. Check your token permissions (need "repo" scope)';
+            } else if (errorMsg.includes('404')) {
+                errorMsg = 'Repository not found. Check repo name format: username/repo';
+            }
+            updateStatus('❌ Push failed: ' + errorMsg);
+            setTimeout(function() {
+                btn.style.background = '#2b3137';
+            }, 3000);
+        });
+    }
     
+   
+    if (isImage) {
+        var xhr = new XMLHttpRequest();
+        xhr.open('GET', '?img_direct=' + encodeURIComponent(filePath), true);
+        xhr.responseType = 'arraybuffer';
+        xhr.onload = function() {
+            if (xhr.status === 200) {
+                var arrayBuffer = xhr.response;
+                var uint8Array = new Uint8Array(arrayBuffer);
+                var binary = '';
+                for (var i = 0; i < uint8Array.length; i++) {
+                    binary += String.fromCharCode(uint8Array[i]);
+                }
+                var base64Content = btoa(binary);
+                
+               
+                var apiUrl = 'https://api.github.com/repos/' + repo + '/contents/' + githubPath;
+                fetch(apiUrl + '?ref=' + branch, {
+                    headers: {
+                        'Authorization': 'token ' + token,
+                        'Accept': 'application/vnd.github.v3+json'
+                    }
+                })
+                .then(function(response) {
+                    if (response.status === 404) {
+                        return { sha: null };
+                    } else if (!response.ok) {
+                        throw new Error('GitHub API error: ' + response.status);
+                    }
+                    return response.json();
+                })
+                .then(function(data) {
+                    pushContent(base64Content, data.sha || null);
+                })
+                .catch(function(error) {
+                    btn.value = 'Push to Git';
+                    btn.disabled = false;
+                    btn.style.opacity = '1';
+                    updateStatus('❌ ' + error.message);
+                });
+            } else {
+                btn.value = 'Push to Git';
+                btn.disabled = false;
+                btn.style.opacity = '1';
+                updateStatus('❌ Failed to read image file');
+            }
+        };
+        xhr.onerror = function() {
+            btn.value = 'Push to Git';
+            btn.disabled = false;
+            btn.style.opacity = '1';
+            updateStatus('❌ Network error reading image');
+        };
+        xhr.send();
+        return;
+    }
+    
+   
     var encodedContent = btoa(unescape(encodeURIComponent(content)));
     var apiUrl = 'https://api.github.com/repos/' + repo + '/contents/' + githubPath;
     
@@ -186,66 +299,13 @@ pushToGitBtn.value = 'Pushing...';
         return response.json();
     })
     .then(function(data) {
-        var payload = {
-            message: 'Update ' + fileName + ' via F7P',
-            content: encodedContent,
-            branch: branch
-        };
-        if (data.sha) {
-            payload.sha = data.sha;
-        }
-        return fetch(apiUrl, {
-            method: 'PUT',
-            headers: {
-                'Authorization': 'token ' + token,
-                'Content-Type': 'application/json',
-                'Accept': 'application/vnd.github.v3+json'
-            },
-            body: JSON.stringify(payload)
-        });
-    })
-    .then(function(response) {
-        if (!response.ok) {
-            return response.json().then(function(err) {
-                throw new Error(err.message || 'Push failed');
-            });
-        }
-        return response.json();
-    })
-    .then(function(data) {
-        var now = new Date();
-        var h = now.getHours();
-        var m = String(now.getMinutes()).padStart(2, '0');
-        var s = String(now.getSeconds()).padStart(2, '0');
-        var ampm = h >= 12 ? 'PM' : 'AM';
-        h = h % 12 || 12;
-        var timeStr = h + ':' + m + ':' + s + ' ' + ampm;
-        
-        var repoUrl = 'https://github.com/' + repo + '/blob/' + branch + '/' + githubPath;
-        var linkHtml = '✅<a href="' + repoUrl + '" target="_blank" style="color:#0066cc;text-decoration:underline dotted #0066cc;font-size:12px;display:inline-block;max-width:330px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;vertical-align:middle;">' + repoUrl + '</a>';
-        
-        updateStatus(linkHtml + '<strong>' + timeStr + '</strong>');
-        
-        pushToGitBtn.value = 'Push to Git';
-        btn.style.background = '#2b3137';
-        btn.style.opacity = '1';
-        btn.disabled = false;
+        pushContent(encodedContent, data.sha || null);
     })
     .catch(function(error) {
-        pushToGitBtn.value = 'Push to Git';
-        btn.style.background = '#dc3545';
-        btn.style.opacity = '1';
+        btn.value = 'Push to Git';
         btn.disabled = false;
-        var errorMsg = error.message;
-        if (errorMsg.includes('403')) {
-            errorMsg = 'Permission denied. Check your token permissions (need "repo" scope)';
-        } else if (errorMsg.includes('404')) {
-            errorMsg = 'Repository not found. Check repo name format: username/repo';
-        }
-        updateStatus('❌ Push failed: ' + errorMsg);
-        setTimeout(function() {
-            btn.style.background = '#2b3137';
-        }, 3000);
+        btn.style.opacity = '1';
+        updateStatus('❌ ' + error.message);
     });
 }
 
@@ -311,7 +371,7 @@ function createNewFolder(currentDir) {
 }
 
 function createNewFile(currentDir) {
-    var fileName = prompt('Enter new file name:', '');
+    var fileName = prompt('Enter new file name:', 'index.html');
     if (fileName !== null && fileName.trim() !== '') {
         window.location.href = '?y=' + encodeURIComponent(currentDir) + '&edit=' + encodeURIComponent(currentDir + fileName.trim());
     } else if (fileName === '') {
