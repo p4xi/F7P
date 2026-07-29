@@ -1,4 +1,4 @@
-# F7P - File Transfer Protocol
+# F7P - File 7ransfer Protocol
 
 **F7P** is a powerful web-based file manager and remote administration tool. It provides a clean, mobile-friendly interface for managing files, executing commands, and performing various system operations through a web browser.
 
