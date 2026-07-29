@@ -1047,6 +1047,18 @@ echo "</div>";
 elseif(isset($_GET['edit']) && ($_GET['edit'] != "")){
     $file = isset($_GET['edit']) ? $_GET['edit'] : '';
     
+   
+    $image_extensions = ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp', 'svg', 'ico'];
+    $file_ext = strtolower(pathinfo($file, PATHINFO_EXTENSION));
+    $is_image = in_array($file_ext, $image_extensions);
+    
+   
+    if ($is_image && file_exists($file) && is_file($file)) {
+        header("Location: ?y=" . urlencode($pwd) . "&img=" . urlencode($file));
+        exit;
+    }
+    
+   
     if(isset($_POST['save'])){
         $file = $_POST['saveas'];
         $content = isset($_POST['content']) ? $_POST['content'] : '';
@@ -1092,6 +1104,7 @@ elseif(isset($_GET['edit']) && ($_GET['edit'] != "")){
     $display_content = htmlspecialchars($content, ENT_QUOTES, 'UTF-8');
     $content_base64 = base64_encode($content);
     ?>
+    
     <form action="?y=<?php echo $pwd; ?>&amp;edit=<?php echo urlencode($file); ?>" method="post" id="editForm" onsubmit="return false;">
         <input type="hidden" name="saveas" value="<?php echo htmlspecialchars($file, ENT_QUOTES, 'UTF-8'); ?>">
         <textarea class="output" name="content_plain" id="editorContent" style="height:400px;"><?php echo $display_content; ?></textarea>
@@ -1154,8 +1167,7 @@ elseif(isset($_GET['edit']) && ($_GET['edit'] != "")){
             e.preventDefault();
             var content=editor.value;
             if(!content&&content!==''){alert('Content is empty');return;}
-            saveBtn.disabled=true;saveBtn.value='Saving...';saveBtn.style.background = 'black';
-saveBtn.style.background = '#CECECE';
+            saveBtn.disabled=true;saveBtn.value='Saving...';saveBtn.style.background = '#CECECE';
             saveFileViaIndexedDB(filePath,content).then(function(resp){
                 var now=new Date();
                 var h=now.getHours();var m=String(now.getMinutes()).padStart(2,'0');var s=String(now.getSeconds()).padStart(2,'0');
@@ -1212,7 +1224,7 @@ saveBtn.style.background = '#CECECE';
     
     <script src="f7p-assets/_script_editpage.js"></script>
     <script src="f7p-assets/_script.js"></script>
-        <?php }
+<?php }
 elseif(isset($_GET['x']) && ($_GET['x'] == 'upload')){
     $msg_url = '';
     $msg_file = '';
