@@ -8,6 +8,7 @@
         var dirMode = localStorage.getItem('f7p_dir_mode_9x7k2m') || 'single';
         var frontendPath = localStorage.getItem('f7p_frontend_path_9x7k2m') || '';
         var backendPath = localStorage.getItem('f7p_backend_path_9x7k2m') || '';
+        var backendKeyword = localStorage.getItem('f7p_backend_keyword_9x7k2m') || '';
         
         var tokenInput = document.getElementById('github_token');
         if (token && tokenInput) {
@@ -45,6 +46,11 @@
             backendInput.value = backendPath;
         }
         
+        var backendKeywordInput = document.getElementById('backend_keyword');
+        if (backendKeyword && backendKeywordInput) {
+            backendKeywordInput.value = backendKeyword;
+        }
+        
         var dirModeRadios = document.querySelectorAll('input[name="dir_mode"]');
         if (dirModeRadios.length > 0) {
             dirModeRadios.forEach(function(radio) {
@@ -64,6 +70,9 @@
             configHtml += dirMode === 'multi' ? '| Mode: Multi' : '| Mode: Single';
             if (dirMode === 'multi') {
                 configHtml += ' (FE: ' + (frontendPath || 'not set') + ', BE: ' + (backendPath || 'not set') + ')';
+                if (backendKeyword) {
+                    configHtml += ' | Keyword: "' + backendKeyword + '"';
+                }
             }
             configDisplay.innerHTML = configHtml || 'No configuration found';
         }
@@ -72,10 +81,14 @@
     window.toggleMultiDir = function(isMulti) {
         var singleRow = document.getElementById('singleDirRow');
         var multiRow = document.getElementById('multiDirRow');
+        var keywordRow = document.getElementById('keywordRow');
         
         if (singleRow && multiRow) {
             singleRow.style.display = isMulti ? 'none' : 'table-row';
             multiRow.style.display = isMulti ? 'table-row' : 'none';
+            if (keywordRow) {
+                keywordRow.style.display = isMulti ? 'table-row' : 'none';
+            }
         }
     };
     
