@@ -714,3 +714,163 @@ document.addEventListener('DOMContentLoaded', function() {
         subtree: true
     });
 });
+
+document.querySelector('.dropdown-toggle').addEventListener('click', function() {
+    document.querySelectorAll('.sub-drop.open').forEach(function(s) {
+        s.classList.remove('open');
+    });
+});
+function goToGitHubAtPoint() {
+    var token = localStorage.getItem('f7p_gh_token_9x7k2m');
+    var repo = localStorage.getItem('f7p_gh_repo_9x7k2m');
+    var branch = localStorage.getItem('f7p_gh_branch_9x7k2m') || 'main';
+    var serverPath = localStorage.getItem('f7p_gh_server_path_9x7k2m');
+    var dirMode = localStorage.getItem('f7p_dir_mode_9x7k2m') || 'single';
+    var githubPath = localStorage.getItem('f7p_gh_path_9x7k2m') || '';
+    var frontendPath = localStorage.getItem('f7p_frontend_path_9x7k2m') || '';
+    var backendPath = localStorage.getItem('f7p_backend_path_9x7k2m') || '';
+    var backendKeyword = localStorage.getItem('f7p_backend_keyword_9x7k2m') || '';
+    
+   
+    var fileInput = document.querySelector('input[name="saveas"]');
+    var currentFile = fileInput ? fileInput.value : '';
+    
+   
+    var currentPath = getCurrentPathFromBreadcrumb();
+    
+    if (!token || !repo || !serverPath) {
+        alert('Please setup GitHub API first!\n\nGo to ⋮ → GitHub API');
+        return;
+    }
+    
+    var targetPath = '';
+    var isFile = false;
+    var fileName = '';
+    
+   
+    if (currentFile && currentFile.startsWith(serverPath)) {
+        targetPath = currentFile;
+        isFile = true;
+        fileName = targetPath.split(/[\/\\]/).pop();
+    } else if (currentPath && currentPath.startsWith(serverPath)) {
+        targetPath = currentPath;
+        isFile = false;
+    } else {
+        alert('Current path is outside Server Path:\n\n' + (currentPath || 'Unknown') + '\n\nSet Server Path in GitHub API settings.');
+        return;
+    }
+    
+   
+    var githubDir = '';
+    if (dirMode === 'multi') {
+        var ext = fileName ? fileName.split('.').pop().toLowerCase() : '';
+        var backendExts = ['php', 'phtml', 'php3', 'php4', 'php5', 'php7', 'phps', 'php8', 
+                          'htaccess', 'htpasswd', 'env', 'ini', 'conf', 'config', 'cfg',
+                          'yaml', 'yml', 'sql', 'db', 'py', 'rb', 'pl', 'cgi', 'sh', 'bash', 'zsh'];
+        var isBackend = backendExts.includes(ext);
+        
+        var hasBackendKeyword = false;
+        if (backendKeyword && backendKeyword.trim() !== '') {
+            var keywords = backendKeyword.split(',').map(function(k) { return k.trim(); });
+            var relativePathForCheck = targetPath.substring(serverPath.length);
+            if (relativePathForCheck.startsWith('/') || relativePathForCheck.startsWith('\\')) {
+                relativePathForCheck = relativePathForCheck.substring(1);
+            }
+            for (var i = 0; i < keywords.length; i++) {
+                if (keywords[i] && relativePathForCheck.toLowerCase().indexOf(keywords[i].toLowerCase()) !== -1) {
+                    hasBackendKeyword = true;
+                    break;
+                }
+            }
+        }
+        
+        if (hasBackendKeyword) {
+            githubDir = backendPath;
+        } else {
+            githubDir = isBackend ? backendPath : frontendPath;
+        }
+    } else {
+        githubDir = githubPath;
+    }
+    
+    if (!githubDir) {
+        alert('No GitHub directory set for this location.\n\nPlease check your GitHub API settings.');
+        return;
+    }
+    
+   
+    var relativePath = targetPath.substring(serverPath.length);
+    if (relativePath.startsWith('/') || relativePath.startsWith('\\')) {
+        relativePath = relativePath.substring(1);
+    }
+    
+   
+    var finalPath = githubDir;
+    if (!finalPath.endsWith('/')) finalPath += '/';
+    finalPath += relativePath;
+    
+   
+    if (isFile) {
+        finalPath = finalPath.replace(/\/$/, '');
+    }
+    
+   
+    var githubUrl = 'https://github.com/' + repo + '/';
+    if (isFile) {
+        githubUrl += 'blob/' + branch + '/' + finalPath;
+    } else {
+        githubUrl += 'tree/' + branch + '/' + finalPath.replace(/\/$/, '');
+    }
+    
+   
+    window.open(githubUrl, '_blank');
+}
+
+function getCurrentPathFromBreadcrumb() {
+    var path = '';
+    var breadcrumb = document.querySelector('#breadcrumb');
+    if (breadcrumb) {
+        var links = breadcrumb.querySelectorAll('a');
+        if (links.length > 0) {
+            var lastLink = links[links.length - 1];
+            var href = lastLink.getAttribute('href');
+            if (href) {
+                var match = href.match(/y=([^&]+)/);
+                if (match) {
+                    path = decodeURIComponent(match[1]);
+                }
+            }
+        }
+    }
+    
+    if (!path && window.F7P_CONFIG) {
+        path = window.F7P_CONFIG.currentPath;
+    }
+    
+    if (!path) {
+        var params = new URLSearchParams(window.location.search);
+        path = params.get('y') || '/';
+    }
+    
+    return path;
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+   
+    
+   
+    var githubMenuItems = document.querySelectorAll('.dropdown-menu a[onclick*="goToGitHubAtPoint"]');
+    if (githubMenuItems.length === 0) {
+       
+        var menuItems = document.querySelectorAll('.dropdown-menu a');
+        menuItems.forEach(function(item) {
+            if (item.textContent.trim() === 'Go to Ur Github at this point') {
+                item.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    goToGitHubAtPoint();
+                });
+            }
+        });
+    }
+});
+

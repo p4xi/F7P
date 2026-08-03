@@ -137,3 +137,17 @@ a:active{opacity:0.6}
 .upload-file-count-local{color:#0066cc}
 .upload-file-count-zip{color:#ff9800}
 .upload-file-input{display:none}
+
+.sub-wrap{position:relative}
+.sub-trigger{display:flex;align-items:center;gap:8px;padding:10px 16px;color:#333;font-size:14px;cursor:pointer;text-decoration:none;white-space:nowrap}
+.sub-trigger:hover{background:#f0f4f8}
+.sub-trigger img{width:20px;height:20px;display:block;flex-shrink:0}
+.sub-trigger .arr{font-size:12px;color:#999}
+.sub-trigger:hover .arr{color:#06c}
+.sub-drop{display:none;position:absolute;top:50%;right:100%;transform:translateY(-50%);background:#fff;border:1px solid #ddd;border-radius:8px;min-width:210px;padding:6px 0;box-shadow:0 8px 24px rgba(0,0,0,.15);z-index:300;margin-right:6px}
+.sub-drop.open{display:block}
+.sub-drop a{display:flex;align-items:center;gap:8px;padding:10px 16px;color:#333;font-size:14px;border-bottom:1px solid #f0f0f0;white-space:nowrap;text-decoration:none;cursor:pointer}
+.sub-drop a:last-child{border-bottom:none}
+.sub-drop a:hover{background:#f0f4f8}
+.sub-drop a img{width:20px;height:20px;display:block;flex-shrink:0}
+.dropdown-menu{overflow:visible}
