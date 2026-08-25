@@ -5,7 +5,7 @@
 ## 🚀 Features
 - **Responsive Design**: Works on desktop and mobile devices
 - **File Management**: Browse, upload, download, rename, delete files and directories
-- **Code Editor**: Edit files directly with syntax highlighting and paste functionality
+- **Code Editor**: Edit files directly with copy and paste button functionality
 - **GitHub Integration**: Push files directly to GitHub repositories with one click
 - **Command Execution**: Run system commands with a built-in terminal
 - **MySQL Management**: Connect to databases, execute queries, and view tables
@@ -18,7 +18,7 @@
 - **Bookmarks**: Save and jump to any file or directory in one click
 - **Breadcrumb Navigation**: Easy directory traversal
 - **GitHub Page Navigation**: Navigate directly to the current file/directory on GitHub
-- **Version history**: Restore any of the last 9 versions locally
+- **Version History**: Restore any of the last 9 versions locally
 - **Auto Logout**: Automatic session expiration after 7 days of inactivity
 
 ## 📋 Requirements
