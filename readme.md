@@ -3,7 +3,7 @@
 **F7P** is a powerful web-based file manager and remote administration tool. It provides a clean, mobile-friendly interface for managing files, executing commands, and performing various system operations through a web browser.
 
 ## 🚀 Features
-
+- **Responsive Design**: Works on desktop and mobile devices
 - **File Management**: Browse, upload, download, rename, delete files and directories
 - **Code Editor**: Edit files directly with syntax highlighting and paste functionality
 - **GitHub Integration**: Push files directly to GitHub repositories with one click
@@ -12,8 +12,14 @@
 - **File Viewing**: Preview images and view file contents
 - **Backdoor Tools**: Network testing utilities (bind shells, reverse connections)
 - **PHP Eval**: Execute PHP code directly
-- **Responsive Design**: Works on desktop and mobile devices
+- **PHP Mail**: Send emails directly from the server via PHP
+- **Comment Remover**: Remove all comments from code with a single click
+- **Multi Repository**: Push to frontend or backend repo separately with auto-detection and customizable folder names
+- **Bookmarks**: Save and jump to any file or directory in one click
 - **Breadcrumb Navigation**: Easy directory traversal
+- **GitHub Page Navigation**: Navigate directly to the current file/directory on GitHub
+- **Version history**: Restore any of the last 9 versions locally
+- **Auto Logout**: Automatic session expiration after 7 days of inactivity
 
 ## 📋 Requirements
 
@@ -37,47 +43,6 @@
 2. Access the file via browser
 3. Login with default credentials
 4. Change the admin password (see Security section below)
-
-## 🛠️ Features Guide
-
-### File Explorer
-- Navigate directories using the breadcrumb or clicking folders
-- Upload files from your computer or via URL
-- Create new directories or files
-- Rename and delete files/folders
-- Download files (standard or compressed .gz)
-
-### Code Editor
-- Edit any file directly in the browser
-- Paste from clipboard with one click
-- Remove comments from code
-- Push files to GitHub
-
-### GitHub Integration
-- Configure GitHub API settings (stored in localStorage)
-- Push files directly to your GitHub repository
-- Supports token authentication
-
-### Command Shell
-- Execute system commands
-- Interactive command prompt
-- View command output in real-time
-
-### MySQL Manager
-- Connect to MySQL databases
-- Browse databases, tables, and data
-- Execute custom SQL queries
-- View query results in table format
-
-### Network Tools (Netsploit)
-- Bind shell backdoors (C/Perl)
-- Reverse connection shells
-- Download and compile exploits
-
-### Additional Tools
-- **PHP Eval**: Execute PHP code snippets
-- **PHP Info**: View PHP configuration
-- **Mail**: Send emails via PHP mail function
 
 ## 🔒 Security
 
@@ -138,7 +103,6 @@ define('ADMIN_PASS_HASH', '$2a$09$lF0dTQmb5Dhh2BG5DAS6NuzJ8/rOT9el9Nui2vZAZmWkkK
 
 - The tool uses PHP sessions; ensure session handling is enabled
 - Some features require specific PHP extensions (MySQL, etc.)
-- The GitHub integration stores tokens in browser localStorage
 - File paths are automatically detected for Windows/Linux systems
 
 ## 🐛 Troubleshooting
@@ -170,14 +134,6 @@ This project is distributed for educational and administrative purposes. Use res
 
 ## 🔧 Configuration
 
-### Environment Variables
-
-| Variable | Description |
-|----------|-------------|
-| `SERVER_SOFTWARE` | Web server software |
-| `REMOTE_ADDR` | Client IP address |
-| `HTTP_HOST` | Server hostname |
-
 ### File Constants
 
 ```php
@@ -191,16 +147,6 @@ F7P is fully responsive and works on:
 - Android/iOS browsers
 - Tablets
 - Desktop browsers (Chrome, Firefox, Safari, Edge)
-
-## 🙋 Support
-
-For issues:
-- Check server error logs
-- Verify PHP configuration
-- Ensure file permissions are correct
-- Test with default settings before customizing
-
----
 
 ## 🛡️ Vulnerability Disclosure
 
