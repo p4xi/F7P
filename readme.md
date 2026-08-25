@@ -12,7 +12,7 @@
 - **File Viewing**: Preview images and view file contents
 - **Backdoor Tools**: Network testing utilities (bind shells, reverse connections)
 - **PHP Eval**: Execute PHP code directly
-- **PHP Mail**: Send emails directly from the server via PHP
+- **PHP Mail**: Send emails directly from the server via PHP!
 - **Comment Remover**: Remove all comments from code with a single click
 - **Multi Repository**: Push to frontend or backend repo separately with auto-detection and customizable folder names
 - **Bookmarks**: Save and jump to any file or directory in one click
